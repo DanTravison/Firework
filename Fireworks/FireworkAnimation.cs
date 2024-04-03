@@ -10,13 +10,15 @@ public class FireworkAnimation
 {
     readonly SKCanvasView _canvas;
     TimeSpan _delay;
+    readonly int _launcherDelay;
     bool _running;
-    bool _initialized;
+    DateTime _start;
+    Task _loopTask;
 
-    public FireworkAnimation(SKCanvasView canvas)
+    public FireworkAnimation(SKCanvasView canvas, int launcherDelay = 400)
     {
         _canvas = canvas;
-        Particles = [];
+        _launcherDelay = launcherDelay;
     }
 
     #region Properties
@@ -27,7 +29,7 @@ public class FireworkAnimation
     internal ParticleCollection Particles
     {
         get;
-    }
+    } = new();
 
     /// <summary>
     /// Gets the value indicating if the animation is done.
@@ -39,14 +41,41 @@ public class FireworkAnimation
 
     #endregion Properties
 
-    public void Start(TimeSpan delay)
+    /// <summary>
+    /// Starts the animation.
+    /// </summary>
+    /// <param name="framerate">The number of frames per second</param>
+    public async void Start(int framerate)
     {
-        if (!_running)
+        Particles.Clear();
+        if (_loopTask != null)
         {
-            _delay = delay;
-            _running = true;
-            _initialized = false;
-            _ = Loop();
+            _running = false;
+            await _loopTask;
+        }
+        
+        _start = DateTime.Now;
+        _delay = TimeSpan.FromMilliseconds(1000 / framerate);
+        _running = true;
+        _loopTask = Loop();
+    }
+
+    public void Stop()
+    {
+        _running = false;
+        _loopTask = null;
+    }
+
+    bool Post()
+    {
+        try
+        {
+            _canvas.InvalidateSurface();
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -55,10 +84,14 @@ public class FireworkAnimation
         await Task.Delay(_delay);
         while (_running)
         {
-            _canvas.InvalidateSurface();
+            if (!Post())
+            {
+                _running = false;
+                return;
+            }
             await Task.Delay(_delay);
         }
-        _canvas.InvalidateSurface();
+        Post();
     }
 
     /// <summary>
@@ -74,15 +107,21 @@ public class FireworkAnimation
         {
             return;
         }
-        if (!_initialized)
+
+        DateTime now = DateTime.Now;
+        if ((now - _start).TotalMilliseconds > _launcherDelay)
         {
-            int width = (int) Math.Round(canvasSize.Width, 0);
-            Firework firework = new(Particle.Rand.Next(width), canvasSize.Height);
-            Particles.Add(firework);
-            _initialized = true;
+            _start = now;
+            int xRange = (int)Math.Round(canvasSize.Width * 0.7, 0);
+            int yRange = (int)Math.Round(canvasSize.Height * 0.7, 0);
+            int xMargin = (int)Math.Round((canvasSize.Width - xRange) / 2, 0);
+            int yMargin = (int)Math.Round(canvasSize.Height - yRange / 2, 0);
+            int x = Particle.Rand.Next(xRange) + xMargin;
+            int y = Particle.Rand.Next(yRange) + yMargin;
+            Particles.Add(new Firework(x, yRange));
         }
 
-        if (Particles.Count > 0)
+        if (_running && Particles.Count > 0)
         {
             List<int> stale = [];
 
@@ -94,6 +133,11 @@ public class FireworkAnimation
                 for (int x = 0; x < Particles.Count; x++)
                 {
                     Particle particle = Particles[x];
+                    if (particle == null)
+                    {
+                        _running = false;
+                        return;
+                    }
                     if (particle.IsDone(height))
                     {
                         // insert in reverse order.
@@ -111,17 +155,12 @@ public class FireworkAnimation
             }
             if (stale.Count > 0)
             {
+                // Remove stale particles
                 foreach (int index in stale)
                 {
                     Particles.RemoveAt(index);
                 }
             }
-        }
-
-        _running = Particles.Count > 0;
-        if (!_running)
-        {
-            _initialized = false;
         }
     }
 }

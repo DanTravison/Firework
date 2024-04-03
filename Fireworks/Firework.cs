@@ -19,7 +19,7 @@ internal class Firework : Particle
         : base(x, y)
     {
         AdjustY = (1.6f + (float)Rand.NextDouble() * 0.4f) * Meter;
-        _animationType = Rand.Next(3);
+        _animationType = Rand.Next(4);
         Color = _animationType == 0 ? SKColors.DarkRed : FromHue();
     }
 
@@ -54,10 +54,10 @@ internal class Firework : Particle
                 AddHearts(particles);
                 break;
             case 1:
-                AddBalls(particles);
-                break;
-            case 3:
                 AddSparks(particles);
+                break;
+            default:
+                AddBalls(particles);
                 break;
         }
     }
@@ -102,7 +102,7 @@ internal class Firework : Particle
 
     void AddSparks(ParticleCollection particles)
     {
-        for (int i = 0; i < 20; i++)
+        for (int i = 0; i < 40; i++)
         {
             double vel = Rand.NextDouble() * 1.2;
             double ax = Math.Sin(i * 18 * DegreeToRad) * vel;
@@ -110,7 +110,7 @@ internal class Firework : Particle
             particles.Add(new Spark(X, Y, (float)ax, (float)ay, Color));
         }
 
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 20; i++)
         {
             double vel = Rand.NextDouble() * 1.2;
             double ax = Math.Sin(i * 36 * DegreeToRad) * vel;
@@ -119,5 +119,5 @@ internal class Firework : Particle
         }
     }
 
-    #endregion Particles
+#endregion Particles
 }

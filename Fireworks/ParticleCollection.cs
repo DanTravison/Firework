@@ -1,13 +1,16 @@
 ﻿namespace CodeCadence.Maui.Fireworks;
 
-using System.Collections;
-
 /// <summary>
 /// Provides a limited <see cref="Particle"/> collection.
 /// </summary>
-internal sealed class ParticleCollection : IEnumerable<Particle>
+internal sealed class ParticleCollection
 {
+    #region Fields
+
     readonly List<Particle> _items = [];
+    readonly object _lock = new();
+
+    #endregion Fields
 
     #region Properties
 
@@ -16,7 +19,13 @@ internal sealed class ParticleCollection : IEnumerable<Particle>
     /// </summary>
     public int Count
     {
-        get => _items.Count;
+        get
+        {
+            lock (_lock)
+            {
+                return _items.Count;
+            }
+        }
     }
 
     /// <summary>
@@ -26,7 +35,17 @@ internal sealed class ParticleCollection : IEnumerable<Particle>
     /// <returns>The <see cref="Particle"/> at the specified <paramref name="index"/>.</returns>
     public Particle this[int index]
     {
-        get => _items[index];
+        get
+        {
+            lock (_lock)
+            {
+                if (index < _items.Count)
+                {
+                    return _items[index];
+                }
+            }
+            return null;
+        }
     }
 
     #endregion Properties
@@ -39,7 +58,10 @@ internal sealed class ParticleCollection : IEnumerable<Particle>
     /// <param name="particle"></param>
     public void Add(Particle particle)
     {
-        _items.Add(particle);
+        lock (_lock)
+        {
+            _items.Add(particle);
+        }
     }
 
     /// <summary>
@@ -48,30 +70,25 @@ internal sealed class ParticleCollection : IEnumerable<Particle>
     /// <param name="index">The zero-based index of the <see cref="Particle"/> to remove.</param>
     public void RemoveAt(int index)
     {
-        _items.RemoveAt(index);
+        lock (_lock)
+        {
+            if (index < _items.Count)
+            {
+                _items.RemoveAt(index);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Removes all <see cref="Particle"/> items from the collection.
+    /// </summary>
+    public void Clear()
+    {
+        lock (_lock)
+        {
+            _items.Clear();
+        }
     }
 
     #endregion Add/RemoveAt
-
-    #region IEnumerable
-
-    /// <summary>
-    /// Gets an <see cref="IEnumerator{Particle}"/> for enumerating item in then collection.
-    /// </summary>
-    /// <returns>An <see cref="IEnumerator{Particle}"/> for enumerating item in then collection.</returns>
-    public IEnumerator<Particle> GetEnumerator()
-    {
-        return _items.GetEnumerator();
-    }
-
-    /// <summary>
-    /// Gets an <see cref="IEnumerator"/> for enumerating item in then collection.
-    /// </summary>
-    /// <returns>An <see cref="IEnumerator"/> for enumerating item in then collection..</returns>
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return _items.GetEnumerator();
-    }
-
-    #endregion IEnumerable
 }

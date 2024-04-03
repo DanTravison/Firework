@@ -7,6 +7,7 @@ using SkiaSharp;
 /// </summary>
 internal class Spark : Particle
 {
+    int SparkLife = 100;
     int _age;
 
     /// <summary>
@@ -29,7 +30,7 @@ internal class Spark : Particle
     /// <returns>true if the <see cref="Spark"/> is done; otherwise, false.</returns>
     public override bool IsDone()
     {
-        return _age > 50;
+        return _age > SparkLife;
     }
 
     /// <summary>
@@ -42,7 +43,8 @@ internal class Spark : Particle
         _age++;
         Update();
 
-        SKColor color = SetAlpha(Color, 48 - _age);
+        int alpha = Math.Min(SparkLife - _age + 10, 255);
+        SKColor color = SetAlpha(Color, alpha);
         base.Draw(canvas, paint, color, Meter * 0.4f);
     }
 }
