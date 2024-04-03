@@ -17,11 +17,19 @@
                              HorizontalOptions="Fill"
                              VerticalOptions="Fill"
                              />
-        <Slider Grid.Row="2" 
-                Minimum="{Binding MinFramerate}" 
-                Maximum="{Binding MaxFramerate}" 
-                Value="{Binding Framerate, Mode=TwoWay}"
-                />
+        <Grid ColumnDefinitions="*, Auto"
+              Grid.Row="2">
+            <Slider Grid.Column="0" 
+                    Minimum="{Binding MinFramerate}" 
+                    Maximum="{Binding MaxFramerate}" 
+                    Value="{Binding Framerate, Mode=TwoWay}"
+                    />
+            <Label Grid.Column="1"
+                   FontSize="20"
+                   TextColor="WhiteSmoke"
+                   Text="{Binding Framerate}"
+                   />
+        </Grid>
     </Grid>
     
 </ContentPage>
