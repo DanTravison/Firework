@@ -18,7 +18,7 @@ internal class Spark : Particle
     /// <param name="adjustX">The <see cref="Particle.X"/> adjustment amount..</param>
     /// <param name="adjustY">The <see cref="Particle.Y"/> adjustment amount.</param>
     /// <param name="color">The <see cref="SKColor"/> to use to draw the <see cref="Spark"/>.</param>
-    public Spark(float x, float y, float adjustX, float adjustY, SKColor color) 
+    public Spark(float x, float y, float adjustX, float adjustY, SKColor color)
         : base(x, y, adjustX, adjustY)
     {
         Color = color;
@@ -34,15 +34,21 @@ internal class Spark : Particle
     }
 
     /// <summary>
+    /// Updates the particle for rendering.
+    /// </summary>
+    public override void Update()
+    {
+        _age++;
+        base.Update();
+    }
+
+    /// <summary>
     /// Renders the <see cref="Spark"/>.
     /// </summary>
     /// <param name="canvas">The <see cref="SKCanvas"/> to draw to.</param>
     /// <param name="paint">The <see cref="SKPaint"/> to use to draw.</param>
     protected override void OnRender(SKCanvas canvas, SKPaint paint)
     {
-        _age++;
-        Update();
-
         int alpha = Math.Min(SparkLife - _age + 10, 255);
         SKColor color = SetAlpha(Color, alpha);
         base.Draw(canvas, paint, color, Meter * 0.4f);

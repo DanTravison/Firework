@@ -1,12 +1,11 @@
-﻿namespace FireworkExperiment
-{
-    public partial class App : Application
-    {
-        public App()
-        {
-            InitializeComponent();
+﻿namespace FireworkExperiment;
 
-            MainPage = new NavigationPage(new MainPage());
-        }
+public partial class App : Application
+{
+    public App()
+    {
+        InitializeComponent();
+
+        MainPage = new NavigationPage(new MainPage());
     }
 }

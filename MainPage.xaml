@@ -2,32 +2,80 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:FireworkExperiment"
+             xmlns:objectmodel="clr-namespace:FireworkExperiment.ObjectModel"
              xmlns:skia="clr-namespace:SkiaSharp.Views.Maui.Controls;assembly=SkiaSharp.Views.Maui.Controls"
              x:Class="FireworkExperiment.MainPage"
-             x:DataType="local:MainViewModel">
+             x:DataType="objectmodel:MainViewModel">
 
-    <Grid RowDefinitions="Auto, *, Auto">
-        <Button Grid.Row="0" 
-                HorizontalOptions="Center"
-                Text="Demo"
-                Clicked="Button_Clicked"
-                />
-        <local:AnimationView x:Name="AnimationView"
-                             Grid.Row="1"
-                             HorizontalOptions="Fill"
-                             VerticalOptions="Fill"
-                             />
-        <Grid ColumnDefinitions="*, Auto"
-              Grid.Row="2">
-            <Slider Grid.Column="0" 
-                    Minimum="{Binding MinFramerate}" 
-                    Maximum="{Binding MaxFramerate}" 
+    <ContentPage.Resources>
+        <Color x:Key="TextColor">WhiteSmoke</Color>
+        <Color x:Key="PrimaryBackground">#212121</Color>
+        <x:Double x:Key="FontSize">24</x:Double>
+
+        <Style TargetType="Label" x:Key="TextStyle">
+            <Setter Property="FontSize" Value="{StaticResource FontSize}"/>
+            <Setter Property="TextColor" Value="{StaticResource TextColor}"/>
+            <Setter Property="HorizontalTextAlignment" Value="Center"/>
+        </Style>
+
+        <Style TargetType="Button"
+               x:DataType="objectmodel:Command"
+               x:Key="TransportButtonStyle"
+               >
+            <Setter Property="FontFamily" Value="FluentUI"/>
+            <Setter Property="FontSize" Value="{StaticResource FontSize}"/>
+            <Setter Property="Command" Value="{Binding}"/>
+            <Setter Property="Text" Value="{Binding Glyph}"/>
+            <Setter Property="TextColor" Value="{StaticResource TextColor}"/>
+            <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
+            <Setter Property="ToolTipProperties.Text" Value="{Binding Description}"/>
+        </Style>
+        
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto, *, Auto"
+          BackgroundColor="{StaticResource PrimaryBackground}">
+        <HorizontalStackLayout Grid.Row="0" 
+                               Spacing="10"
+                               HorizontalOptions="Center"
+                               >
+            <Button BindingContext="{Binding RunCommand}"
+                    Style="{StaticResource TransportButtonStyle}"
+                    />
+
+            <Button BindingContext="{Binding PauseCommand}"
+                    Style="{StaticResource TransportButtonStyle}"
+                    />
+
+            <Button BindingContext="{Binding StopCommand}"
+                    Style="{StaticResource TransportButtonStyle}"
+                    TextColor="Red"
+                    />
+        </HorizontalStackLayout>
+ 
+        <local:CanvasView x:Name="Canvas" 
+                          Grid.Row="1"
+                          HorizontalOptions="Fill"
+                          VerticalOptions="Fill"
+                          />
+        
+        <Grid ColumnDefinitions="Auto, *, Auto"
+              Grid.Row="2"
+              ColumnSpacing="10"
+              >
+            <Label Grid.Column="0"
+                   Style="{StaticResource TextStyle}"
+                   Text="Frame Rate"
+                   />
+            <Slider Grid.Column="1" 
+                    VerticalOptions="Center"
+                    Minimum="{Binding MinFramerate, Mode=OneWay}" 
+                    Maximum="{Binding MaxFramerate, Mode=OneWay}" 
                     Value="{Binding Framerate, Mode=TwoWay}"
                     />
-            <Label Grid.Column="1"
-                   FontSize="20"
-                   TextColor="WhiteSmoke"
-                   Text="{Binding Framerate}"
+            <Label Grid.Column="2"
+                   Style="{StaticResource TextStyle}"
+                   Text="{Binding Framerate, Mode=OneWay}"
                    />
         </Grid>
     </Grid>

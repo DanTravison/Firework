@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace FireworkExperiment;
+namespace FireworkExperiment.ObjectModel;
 
 /// <summary>
 /// Provides an abstract base class for classes supporting INotifyPropertyChanged

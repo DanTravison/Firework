@@ -1,28 +1,37 @@
-﻿using CodeCadence.Maui.Fireworks;
+﻿namespace FireworkExperiment;
 
-namespace FireworkExperiment
+using FireworkExperiment.Fireworks;
+using FireworkExperiment.ObjectModel;
+
+public partial class MainPage : ContentPage
 {
-    
-    public partial class MainPage : ContentPage
+    readonly MainViewModel _model = new();
+    AnimationState _previousState;
+
+    public MainPage()
     {
-        MainViewModel _model = new();
+        BindingContext = _model;
+        InitializeComponent();
+        _model.Animation = new(Canvas);
+    }
 
-        public MainPage()
-        {
-            BindingContext = _model;
-            InitializeComponent();
-            AnimationView.Firework = new(AnimationView);
-        }
+    protected override void OnDisappearing()
+    {
+        _previousState = _model.Animation.State;
+        _model.Animation.Stop();
+        base.OnDisappearing();
+    }
 
-        protected override void OnDisappearing()
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        if (_previousState != AnimationState.Stopped)
         {
-            AnimationView.Firework.Stop();
-            base.OnDisappearing();
-        }
-
-        private void Button_Clicked(object sender, EventArgs e)
-        {
-            AnimationView.Firework.Start((int)_model.Framerate);
+            _model.Animation.Start();
+            if (_previousState == AnimationState.Paused)
+            {
+                _model.Animation.Pause();
+            }
         }
     }
 }

@@ -133,7 +133,7 @@ internal abstract class Particle
     /// <summary>
     /// Updates the particle for rendering.
     /// </summary>
-    protected virtual void Update()
+    public virtual void Update()
     {
         Y -= AdjustY;
         X += AdjustX;

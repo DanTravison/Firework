@@ -15,7 +15,7 @@ internal class Firework : Particle
     /// </summary>
     /// <param name="x">The zero-base X coordinate.</param>
     /// <param name="y">The zero-base Y coordinate.</param>
-    public Firework(float x, float y) 
+    public Firework(float x, float y)
         : base(x, y)
     {
         AdjustY = (1.6f + (float)Rand.NextDouble() * 0.4f) * Meter;
@@ -25,7 +25,6 @@ internal class Firework : Particle
 
     protected override void OnRender(SKCanvas canvas, SKPaint paint)
     {
-        Update();
         SKColor color = SetAlpha(Color, 32);
         Draw(canvas, paint, color, Meter * 0.8f);
     }
@@ -119,5 +118,5 @@ internal class Firework : Particle
         }
     }
 
-#endregion Particles
+    #endregion Particles
 }
