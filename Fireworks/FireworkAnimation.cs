@@ -15,19 +15,19 @@ public class FireworkAnimation : ObservableObject, IDisposable
     #region Constants
 
     /// <summary>
-    /// Defines the minimum frames per second.
+    /// Defines the minimum updates per second.
     /// </summary>
-    public const double MinimumFramerate = 10;
+    public const double MinimumSpeed = 10;
     
     /// <summary>
-    /// Defines the maximum frames per second.
+    /// Defines the maximum updates per second.
     /// </summary>
-    public const double MaximumFramerate = 120;
+    public const double MaximumSpeed = 120;
 
     /// <summary>
-    /// Defines the default frames per second.
+    /// Defines the default updates per second.
     /// </summary>
-    public const double DefaultFramerate = 60;
+    public const double DefaultSpeed = 60;
 
     #endregion Constants
 
@@ -36,7 +36,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
     SKCanvasView _canvas;
     TimeSpan _delay;
     readonly int _launcherDelay;
-    double _framerate = DefaultFramerate;
+    double _speed = DefaultSpeed;
     bool _running;
     DateTime _clock;
     AnimationState _state;
@@ -104,23 +104,31 @@ public class FireworkAnimation : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Gets or sets the frame rate (frames per second)
+    /// Gets or sets the speed of the animation.
     /// </summary>
-    public double Framerate
+    /// <value>
+    /// A zero-based value indicating the number of updates per second.
+    /// </value>
+    /// <remarks>
+    /// The value is throttled to the range of 10 through 12.
+    /// The framework determines the frequency of the animation updates
+    /// (i.e., a larger framerate results in a faster animation.)
+    /// </remarks>
+    public double Speed
     {
-        get => _framerate;
+        get => _speed;
         set
         {
             value = Math.Round(value, 0);
-            if (value < MinimumFramerate)
+            if (value < MinimumSpeed)
             {
-                value = MinimumFramerate;
+                value = MinimumSpeed;
             }
-            else if (value > MaximumFramerate) 
+            else if (value > MaximumSpeed) 
             {
-                value = MaximumFramerate;
+                value = MaximumSpeed;
             }
-            if (SetProperty(ref _framerate, value, FramerateChangedEventArgs))
+            if (SetProperty(ref _speed, value, FramerateChangedEventArgs))
             {
                 UpdateClock();
             }
@@ -134,7 +142,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
     void UpdateClock()
     {
         _clock = DateTime.Now;
-        _delay = TimeSpan.FromMilliseconds(1000 / _framerate);
+        _delay = TimeSpan.FromMilliseconds(1000 / _speed);
     }
 
     /// <summary>
@@ -331,9 +339,9 @@ public class FireworkAnimation : ObservableObject, IDisposable
 
     /// <summary>
     /// <see cref="PropertyChangedEventArgs"/> passed to <see cref="INotifyPropertyChanged.PropertyChanged"/>
-    /// when <see cref="Framerate"/> changes.
+    /// when <see cref="Speed"/> changes.
     /// </summary>
-    public static readonly PropertyChangedEventArgs FramerateChangedEventArgs = new(nameof(Framerate));
+    public static readonly PropertyChangedEventArgs FramerateChangedEventArgs = new(nameof(Speed));
 
     #endregion PropertyChangedEventArgs
 

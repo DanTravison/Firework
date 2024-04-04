@@ -9,7 +9,6 @@ internal class MainViewModel : ObservableObject
 {
     #region Fields
 
-    double _framerate = FireworkAnimation.DefaultFramerate;
     FireworkAnimation _animation;
 
     #endregion Fields
@@ -24,39 +23,20 @@ internal class MainViewModel : ObservableObject
     #region Properties
 
     /// <summary>
-    /// Gets or sets the <see cref="FireworkAnimation.Framerate"/>.
+    /// Gets the minimum <see cref="FireworkAnimation.Speed"/>.
     /// </summary>
-    public double Framerate
-    {
-        get => _framerate;
-        set
-        {
-            value = Math.Round(value, 0);
-            if (value >= MinFramerate && value <= MaxFramerate)
-            {
-                if (SetProperty(ref _framerate, value, FramerateChangedEventArgs) && _animation != null)
-                {
-                    _animation.Framerate = value;
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Gets the minimum <see cref="FireworkAnimation.Framerate"/>.
-    /// </summary>
-    public double MinFramerate
+    public double MinimumSpeed
     {
         get;
-    } = FireworkAnimation.MinimumFramerate;
+    } = FireworkAnimation.MinimumSpeed;
 
     /// <summary>
-    /// Gets the maximum <see cref="FireworkAnimation.Framerate"/>.
+    /// Gets the maximum <see cref="FireworkAnimation.Speed"/>.
     /// </summary>
-    public double MaxFramerate
+    public double MaximumSpeed
     {
         get;
-    } = FireworkAnimation.MaximumFramerate;
+    } = FireworkAnimation.MaximumSpeed;
 
     /// <summary>
     /// Gets or sets the <see cref="FireworkAnimation"/>.
@@ -77,7 +57,6 @@ internal class MainViewModel : ObservableObject
                 if (_animation != null)
                 {
                     _animation.PropertyChanged += OnAnimationPropertyChanged;
-                    _animation.Framerate = Framerate;
                 }
                 SetState(AnimationState.Stopped);
                 OnPropertyChanged(AnimationChangedEventArgs);
@@ -168,12 +147,6 @@ internal class MainViewModel : ObservableObject
         PauseCommand.IsEnabled = state == AnimationState.Running;
         StopCommand.IsEnabled = state != AnimationState.Stopped;
     }
-
-    /// <summary>
-    /// <see cref="PropertyChangedEventArgs"/> passed to <see cref="INotifyPropertyChanged.PropertyChanged"/>
-    /// when <see cref="Framerate"/> changes.
-    /// </summary>
-    static readonly PropertyChangedEventArgs FramerateChangedEventArgs = new(nameof(Framerate));
 
     /// <summary>
     /// <see cref="PropertyChangedEventArgs"/> passed to <see cref="INotifyPropertyChanged.PropertyChanged"/>
