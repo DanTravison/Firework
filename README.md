@@ -1,6 +1,6 @@
 # Firework Animation Experiment
 
-***NOTE: Currently only tested on Windows 11.***
+***NOTE: Currently only tested on Windows 11 and a 3rd Generaton IPad Pro 17.4.1.***
 
 ## Overview 
 I'm creating on a simple maze program for the younger kids in my extended family.
