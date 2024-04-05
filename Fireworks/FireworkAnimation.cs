@@ -1,6 +1,5 @@
-﻿namespace CodeCadence.Maui.Fireworks;
+﻿namespace FireworkExperiment.Fireworks;
 
-using FireworkExperiment.Fireworks;
 using FireworkExperiment.ObjectModel;
 using SkiaSharp;
 using SkiaSharp.Views.Maui;

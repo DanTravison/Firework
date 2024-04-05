@@ -1,4 +1,4 @@
-﻿namespace CodeCadence.Maui.Fireworks;
+﻿namespace FireworkExperiment.Fireworks;
 
 /// <summary>
 /// Provides a limited <see cref="Particle"/> collection.

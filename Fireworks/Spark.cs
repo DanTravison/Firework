@@ -1,4 +1,4 @@
-﻿namespace CodeCadence.Maui.Fireworks;
+﻿namespace FireworkExperiment.Fireworks;
 
 using SkiaSharp;
 
