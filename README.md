@@ -1,6 +1,14 @@
 # Firework Animation Experiment
 
-***NOTE: Currently only tested on Windows 11 and a 3rd Generaton IPad Pro 17.4.1.***
+## Table of Contents
+* [Overview]
+* [Goals]
+* [High-level Changes]
+* [Public APIs]
+* [How it functions]
+* [Tested Platforms]
+* [Todo]
+
 
 ## Overview 
 I'm creating on a simple maze program for the younger kids in my extended family.
@@ -22,7 +30,7 @@ dependent on an existing game engine, such as Unity.
 I narrowed my focus to c#-based solutions that native APIs and ended up deciding to port 
 https://github.com/rehwinkel/FireworkScreenSaver to .Net Maui using SkiaSharp.
 
-## High-level changes:
+## High-level Changes
 
 * The static FireworkRenderer was rewritten as FireworkAnimation, placing
 the Particle list as an instance variable.
@@ -46,7 +54,9 @@ animation and adjust the framerate.
 
 * Define a variable to control how often a firework is launched.
 
-## FrameworkAnimation Public APIs:
+## Public APIs
+
+FrameworkAnimation provides the public APIs, including the following:
 
 * Constructor - constructs the animation.
   * Accepts the SKCanvasView to draw to and the delay between launching fireworks.
@@ -66,6 +76,11 @@ to the constructor. The Firework moves up the screen until an apogee is
 encounter then creates Spark instances to simulate the explosion of the firework.
 
 * Sparks spread and fall, fading in color until their lifetime has been reached.
+
+## Tested Platforms
+
+* IPad Pro, 3rd Generation, iPad OS: 17.4.1.
+* Windows 11 Pro 23H2, OS Build:22635.3420
 
 ## Todo
 
