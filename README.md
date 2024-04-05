@@ -1,4 +1,5 @@
 # Firework Animation Experiment
+Provides a simplified Fireworks animation on an SKCanvasView
 
 ***NOTE: See Tested Platforms for testing status***
 
