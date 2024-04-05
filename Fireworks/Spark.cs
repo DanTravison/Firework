@@ -1,6 +1,5 @@
 ﻿namespace CodeCadence.Maui.Fireworks;
 
-using FireworkExperiment.Fireworks;
 using SkiaSharp;
 
 /// <summary>
@@ -9,7 +8,9 @@ using SkiaSharp;
 internal class Spark : Particle
 {
     const int SparkLife = 100;
-    int _age;
+
+    // TODO: randomize _lifetime.
+    int _lifetime = SparkLife;
     const double DegreeToRad = 0.01745329251994329576923690768489;
 
     /// <summary>
@@ -32,7 +33,7 @@ internal class Spark : Particle
     /// <returns>true if the <see cref="Spark"/> is done; otherwise, false.</returns>
     public override bool IsDone()
     {
-        return _age > SparkLife;
+        return _lifetime <= 0;
     }
 
     /// <summary>
@@ -40,7 +41,7 @@ internal class Spark : Particle
     /// </summary>
     public override void Update()
     {
-        _age++;
+        _lifetime--;
         base.Update();
     }
 
@@ -51,7 +52,7 @@ internal class Spark : Particle
     /// <param name="paint">The <see cref="SKPaint"/> to use to draw.</param>
     protected override void OnRender(SKCanvas canvas, SKPaint paint)
     {
-        int alpha = Math.Min(SparkLife - _age + 5, 255);
+        int alpha = Math.Min(SparkLife - _lifetime + 5, 255);
         SKColor color = SetAlpha(Color, alpha);
         base.Draw(canvas, paint, color, Meter * 0.5f);
     }

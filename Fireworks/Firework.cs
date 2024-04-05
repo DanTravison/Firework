@@ -15,19 +15,20 @@ internal class Firework : Particle
     /// </summary>
     /// <param name="x">The zero-base X coordinate.</param>
     /// <param name="y">The height.</param>
-    public Firework(float x, float y, double fps)
+    /// <param name="framerate">The frames per second of the animation.</param>
+    public Firework(float x, float y, double framerate)
         : base(x, y)
     {
         // calculate a margin to ensure the firework doesn't go off screen
         // (top of the canvas).
-        float margin = (float) Math.Round(y * 0.2, 0);
+        float margin = (float)Math.Round(y * 0.2, 0);
 
         // Randomly select a floor.
-        _floor = margin / (float) (Rand.Next(4) + 1);
+        _floor = margin / (float)(Rand.Next(4) + 1);
 
         // Select an adjustment between 25 and 30 pixels / frame.
         AdjustY = 25 + (Rand.Next(5) + 1);
-        
+
         // Randomly select a color.
         Color = Rand.Next(4) == 0 ? SKColors.DarkRed : FromHue();
     }
@@ -93,4 +94,4 @@ internal class Firework : Particle
 
     #endregion IsDone
 
- }
+}

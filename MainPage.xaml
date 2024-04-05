@@ -66,17 +66,17 @@
               >
             <Label Grid.Column="0"
                    Style="{StaticResource TextStyle}"
-                   Text="Animation Speed:"
+                   Text="Frame rate:"
                    />
             <Slider Grid.Column="1" 
                     VerticalOptions="Center"
                     Minimum="{Binding MinimumSpeed, Mode=OneTime}" 
                     Maximum="{Binding MaximumSpeed, Mode=OneTime}" 
-                    Value="{Binding Animation.Speed, Mode=TwoWay}"
+                    Value="{Binding Animation.Framerate, Mode=TwoWay}"
                     />
             <Label Grid.Column="2"
                    Style="{StaticResource TextStyle}"
-                   Text="{Binding Animation.Speed, Mode=OneWay}"
+                   Text="{Binding Animation.Framerate, Mode=OneWay}"
                    />
         </Grid>
     </Grid>

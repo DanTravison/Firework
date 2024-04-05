@@ -23,20 +23,20 @@ internal class MainViewModel : ObservableObject
     #region Properties
 
     /// <summary>
-    /// Gets the minimum <see cref="FireworkAnimation.Speed"/>.
+    /// Gets the minimum <see cref="FireworkAnimation.Framerate"/>.
     /// </summary>
     public double MinimumSpeed
     {
         get;
-    } = FireworkAnimation.MinimumSpeed;
+    } = FireworkAnimation.MinimumFramerate;
 
     /// <summary>
-    /// Gets the maximum <see cref="FireworkAnimation.Speed"/>.
+    /// Gets the maximum <see cref="FireworkAnimation.Framerate"/>.
     /// </summary>
     public double MaximumSpeed
     {
         get;
-    } = FireworkAnimation.MaximumSpeed;
+    } = FireworkAnimation.MaximumFramerate;
 
     /// <summary>
     /// Gets or sets the <see cref="FireworkAnimation"/>.
@@ -120,7 +120,7 @@ internal class MainViewModel : ObservableObject
             {
                 _animation.Pause();
             }
-            else if (_animation.State == AnimationState.Paused) 
+            else if (_animation.State == AnimationState.Paused)
             {
                 _animation.Start();
             }

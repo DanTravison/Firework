@@ -36,7 +36,7 @@ internal abstract class Particle
     {
         X = x;
         Y = y;
-        Meter = y  / 100;
+        Meter = y / 100;
     }
 
     /// <summary>
