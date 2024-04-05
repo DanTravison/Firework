@@ -1,13 +1,13 @@
 # Firework Animation Experiment
 
 ## Table of Contents
-* [Overview]
-* [Goals]
-* [High-level Changes]
-* [Public APIs]
-* [How it functions]
-* [Tested Platforms]
-* [Todo]
+* [## Overview]
+* [## Goals]
+* [## High-level Changes]
+* [## Public APIs]
+* [## How it functions]
+* [## Tested Platforms]
+* [## Todo]
 
 
 ## Overview 
