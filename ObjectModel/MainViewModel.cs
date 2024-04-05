@@ -1,5 +1,4 @@
-﻿using CodeCadence.Maui.Fireworks;
-using FireworkExperiment.Fireworks;
+﻿using FireworkExperiment.Fireworks;
 using FireworkExperiment.Resources;
 using System.ComponentModel;
 
