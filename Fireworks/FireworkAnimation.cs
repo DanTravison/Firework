@@ -248,7 +248,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
             if ((now - _clock).TotalMilliseconds > _launcherDelay)
             {
                 _clock = now;
-                int xRange = (int)Math.Round(canvasSize.Width * 0.8, 0);
+                int xRange = (int)Math.Round(canvasSize.Width * 0.7, 0);
                 int xMargin = (int)Math.Round((canvasSize.Width - xRange) / 2, 0);
                 
                 int x = Particle.Rand.Next(xRange) + xMargin;
