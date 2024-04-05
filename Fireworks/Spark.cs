@@ -52,7 +52,7 @@ internal class Spark : Particle
     /// <param name="paint">The <see cref="SKPaint"/> to use to draw.</param>
     protected override void OnRender(SKCanvas canvas, SKPaint paint)
     {
-        int alpha = Math.Min(SparkLife - _lifetime + 5, 255);
+        int alpha = Math.Min(_lifetime + 5, 255);
         SKColor color = SetAlpha(Color, alpha);
         base.Draw(canvas, paint, color, Meter * 0.5f);
     }
