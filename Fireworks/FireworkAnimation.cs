@@ -49,7 +49,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
     /// </summary>
     /// <param name="canvas">The <see cref="SKCanvasView"/> to draw to.</param>
     /// <param name="launcherDelay">The delay between launching a new firework.</param>
-    public FireworkAnimation(SKCanvasView canvas, int launcherDelay = 400)
+    public FireworkAnimation(SKCanvasView canvas, int launcherDelay = 300)
     {
         _canvas = canvas;
         _canvas.PaintSurface += OnPaintSurface;
@@ -240,7 +240,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
         SKCanvas canvas = surface.Canvas;
         SKSize canvasSize = _canvas.CanvasSize;
 
-        int yRange = (int)Math.Round(canvasSize.Height * 0.7, 0);
+        int height = (int)Math.Round(canvasSize.Height, 0);
 
         if (_state == AnimationState.Running)
         {
@@ -248,10 +248,11 @@ public class FireworkAnimation : ObservableObject, IDisposable
             if ((now - _clock).TotalMilliseconds > _launcherDelay)
             {
                 _clock = now;
-                int xRange = (int)Math.Round(canvasSize.Width * 0.7, 0);
+                int xRange = (int)Math.Round(canvasSize.Width * 0.8, 0);
                 int xMargin = (int)Math.Round((canvasSize.Width - xRange) / 2, 0);
+                
                 int x = Particle.Rand.Next(xRange) + xMargin;
-                Particles.Add(new Firework(x, yRange));
+                Particles.Add(new Firework(x, height, Speed));
             }
         }
 
@@ -263,7 +264,6 @@ public class FireworkAnimation : ObservableObject, IDisposable
             {
                 paint.StrokeWidth = 1;
                 paint.Style = SKPaintStyle.Fill;
-                int height = (int)Math.Round(canvasSize.Height, 0);
 
                 for (int x = 0; x < Particles.Count; x++)
                 {
@@ -276,7 +276,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
                     if (_state == AnimationState.Running)
                     {
                         particle.Update();
-                        if (particle.IsDone(yRange))
+                        if (particle.IsDone(height))
                         {
                             // insert in reverse order.
                             stale.Insert(0, x);

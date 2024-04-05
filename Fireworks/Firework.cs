@@ -6,7 +6,8 @@ internal class Firework : Particle
 {
     #region Fields
 
-    int _animationType;
+    readonly int _animationType;
+    readonly float _floor;
 
     #endregion Fields
 
@@ -14,11 +15,23 @@ internal class Firework : Particle
     /// Initializes a new instance of this class.
     /// </summary>
     /// <param name="x">The zero-base X coordinate.</param>
-    /// <param name="y">The zero-base Y coordinate.</param>
-    public Firework(float x, float y)
+    /// <param name="y">The height.</param>
+    public Firework(float x, float y, double speed)
         : base(x, y)
     {
-        AdjustY = (1.6f + (float)Rand.NextDouble() * 0.4f) * Meter;
+        // calculate a Y limit to ensure the firework doesn't go off the
+        // top of the window.
+        float margin = (float) Math.Round(y * 0.2, 0);
+
+        _floor = margin / (float) (Rand.Next(4) + 1);
+        float distance = y - _floor;
+        float unit = (float)(distance / (speed * 3));
+
+        // Randomly pick a limit for this instance.
+        // _floor = (float) Math.Max(Math.Round(Rand.NextDouble() * margin, 0), margin);
+
+        AdjustY = (3.0f + (float)Rand.NextDouble() * 0.4f) * unit;
+        // AdjustY = unit * (.1f + (float)Rand.NextDouble() * 0.4f);
         _animationType = Rand.Next(4);
         Color = _animationType == 0 ? SKColors.DarkRed : FromHue();
     }
@@ -31,9 +44,23 @@ internal class Firework : Particle
 
     #region IsDone
 
+    public override void Update()
+    {
+        float distance = Y - _floor;
+        Y -= AdjustY;
+        if (distance < _floor * 2)
+        {
+            AdjustY -= Gravity;
+        }
+        else
+        {
+            AdjustY -= Gravity;
+        }
+    }
+
     public override bool IsDone(int height)
     {
-        return Y > height || IsDone();
+        return Y < _floor || IsDone();
     }
 
     public override bool IsDone()

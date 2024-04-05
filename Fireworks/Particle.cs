@@ -16,9 +16,14 @@ internal abstract class Particle
     public static readonly Random Rand = new Random();
 
     /// <summary>
-    /// Defines the gravity constant.
+    /// Defines the base gravity constant.
     /// </summary>
-    protected const float Gravity = 9.81f / 50f;
+    protected const float GravityConstant = 9.81f;
+
+    /// <summary>
+    /// Defines the default gravity constant to use to decelerate particles.
+    /// </summary>
+    protected const float Gravity = GravityConstant / 50f;
 
     #endregion Fields
 
@@ -31,7 +36,7 @@ internal abstract class Particle
     {
         X = x;
         Y = y;
-        Meter = y / 100;
+        Meter = y  / 100;
     }
 
     /// <summary>

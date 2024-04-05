@@ -7,7 +7,7 @@ using SkiaSharp;
 /// </summary>
 internal class Spark : Particle
 {
-    int SparkLife = 100;
+    const int SparkLife = 100;
     int _age;
 
     /// <summary>
@@ -49,8 +49,8 @@ internal class Spark : Particle
     /// <param name="paint">The <see cref="SKPaint"/> to use to draw.</param>
     protected override void OnRender(SKCanvas canvas, SKPaint paint)
     {
-        int alpha = Math.Min(SparkLife - _age + 10, 255);
+        int alpha = Math.Min(SparkLife - _age + 5, 255);
         SKColor color = SetAlpha(Color, alpha);
-        base.Draw(canvas, paint, color, Meter * 0.4f);
+        base.Draw(canvas, paint, color, Meter * 0.5f);
     }
 }

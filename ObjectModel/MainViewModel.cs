@@ -17,7 +17,7 @@ internal class MainViewModel : ObservableObject
     {
         RunCommand = new(OnRun, FluentUI.CaretRight, Strings.PlayText, false);
         PauseCommand = new(OnPause, FluentUI.Pause, Strings.PauseText, false);
-        StopCommand = new(OnStop, FluentUI.SquareFilled, Strings.StopText, false);
+        StopCommand = new(OnStop, FluentUI.CircleFilled, Strings.StopText, false);
     }
 
     #region Properties
@@ -143,8 +143,8 @@ internal class MainViewModel : ObservableObject
     /// <param name="state"></param>
     void SetState(AnimationState state)
     {
-        RunCommand.IsEnabled = state == AnimationState.Stopped ||  state == AnimationState.Paused;
-        PauseCommand.IsEnabled = state == AnimationState.Running;
+        RunCommand.IsEnabled = state == AnimationState.Stopped;
+        PauseCommand.IsEnabled = state == AnimationState.Running || state == AnimationState.Paused;
         StopCommand.IsEnabled = state != AnimationState.Stopped;
     }
 
