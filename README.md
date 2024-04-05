@@ -1,14 +1,6 @@
 # Firework Animation Experiment
 
-## Table of Contents
-* [Overview](## Overview)
-* [Goals](## Goals)
-* [High-level Changes](## High-level Changes)
-* [Public APIs](## Public APIs)
-* [Public APIs](## Public APIs)
-* [Tested Platforms](## Tested Platforms)
-* [Todo](## Todo)
-
+***NOTE: See Tested Platforms for testing status***
 
 ## Overview 
 I'm creating on a simple maze program for the younger kids in my extended family.
