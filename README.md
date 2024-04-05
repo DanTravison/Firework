@@ -1,10 +1,11 @@
 # Firework Animation Experiment
 
+***NOTE: Currently only tested on Windows 11.***
+
 ## Overview 
 I'm creating on a simple maze program for the younger kids in my extended family.
 It presents hand-drawn mazes with a start and end location and the touch is used
-to draw a line from the start to end. 
-When they solve the maze, I want to present a fun animation
+to draw a line from the start to end. When they solve the maze, I want to present a fun animation
 to show the maze has been solved.
 
 ## Goals
