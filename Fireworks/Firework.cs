@@ -2,11 +2,12 @@
 
 using SkiaSharp;
 
-internal class Firework : Particle
+internal class Firework : Particle, IFirework
 {
     #region Fields
 
     readonly float _floor;
+    readonly bool _addTrail;
 
     #endregion Fields
 
@@ -29,18 +30,34 @@ internal class Firework : Particle
         // Select an adjustment between 25 and 30 pixels / frame.
         AdjustY = 25 + (Rand.Next(5) + 1);
 
+        // Add a random small change in X
+        AdjustX = Rand.Next(10) - 5;
+        
         // Randomly select a color.
         Color = Rand.Next(4) == 0 ? SKColors.DarkRed : FromHue();
-    }
+        // randomly draw a trail
+        _addTrail = Rand.Next(4) < 2;
 
+#if (false)
+        if (Rand.Next(4) < 2)
+        {
+            // explode immediately at the apogee.
+            Y = _floor;
+        }
+#endif
+    }
 
     /// <summary>
     /// Updates the <see cref="Firework"/> for rendering.
     /// </summary>
-    public override void Update()
+    /// <param name="particles">The <see cref="ParticleCollection"/> to update.</param>
+    public override void Update(ParticleCollection particles)
     {
-        DateTime now = DateTime.Now;
+        float x = X;
+        float y = Y;
+
         Y -= AdjustY;
+        X += AdjustX;
         AdjustY -= Gravity;
 
         float distance = Y - _floor;
@@ -48,6 +65,10 @@ internal class Firework : Particle
         if (distance < _floor * 2)
         {
             AdjustY -= Gravity;
+        }
+        if (_addTrail)
+        {
+            particles.Add(new Trail(x, y, X, Y));
         }
     }
 
@@ -63,35 +84,36 @@ internal class Firework : Particle
     }
 
     /// <summary>
-    /// Explodes the firework.
+    /// Explodes the <see cref="Firework"/>.
     /// </summary>
     /// <param name="particles">The <see cref="ParticleCollection"/> to update.</param>
     public void Explode(ParticleCollection particles)
     {
         Spark.AddSparks(particles, Color, X, Y);
-    }
+        /*
+        int count = Rand.Next(3);
+        for (int x = 0; x < count; x++)
+        {
+            int half = (int) Math.Round(_floor) / 2;
+            float distance = _floor + Rand.Next(half);
+            SecondaryFirework secondary = new(this, distance, (count & 1) == 1);
+            particles.Add(secondary);
+        }
+        */
+     }
 
     #region IsDone
 
     /// <summary>
     /// Determines if the <see cref="Firework"/> is done animating.
     /// </summary>
-    /// <param name="height">The current height.</param>
-    /// <returns>true if the <see cref="Firework"/> is done animating; otherwise, false.</returns>
-    public override bool IsDone(int height)
+    /// <value>
+    /// true if the <see cref="Firework"/> is done animating; otherwise, false.
+    /// </value>
+    public override bool IsDone
     {
-        return Y < _floor || IsDone();
-    }
-
-    /// <summary>
-    /// Determines if the <see cref="Firework"/> is done animating.
-    /// </summary>
-    /// <returns>true if the <see cref="Firework"/> is done animating; otherwise, false.</returns>
-    public override bool IsDone()
-    {
-        return AdjustY <= 0;
+        get => Y < _floor || AdjustY <= 0;
     }
 
     #endregion IsDone
-
 }

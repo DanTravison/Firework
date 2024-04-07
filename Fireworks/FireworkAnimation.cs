@@ -248,14 +248,14 @@ public class FireworkAnimation : ObservableObject, IDisposable
         SKCanvas canvas = surface.Canvas;
         SKSize canvasSize = _canvas.CanvasSize;
 
-        int height = (int)Math.Round(canvasSize.Height, 0);
-
-        if (_state == AnimationState.Running)
+         if (_state == AnimationState.Running)
         {
             DateTime now = DateTime.Now;
             if ((now - _clock).TotalMilliseconds > _launcherDelay)
             {
                 _clock = now;
+                int height = (int)Math.Round(canvasSize.Height, 0);
+
                 int xRange = (int)Math.Round(canvasSize.Width * 0.7, 0);
                 int xMargin = (int)Math.Round((canvasSize.Width - xRange) / 2, 0);
 
@@ -283,12 +283,12 @@ public class FireworkAnimation : ObservableObject, IDisposable
                     }
                     if (_state == AnimationState.Running)
                     {
-                        particle.Update();
-                        if (particle.IsDone(height))
+                        particle.Update(Particles);
+                        if (particle.IsDone)
                         {
                             // insert in reverse order.
                             stale.Insert(0, x);
-                            if (particle is Firework firework)
+                            if (particle is IFirework firework)
                             {
                                 firework.Explode(Particles);
                                 continue;
@@ -352,5 +352,4 @@ public class FireworkAnimation : ObservableObject, IDisposable
     public static readonly PropertyChangedEventArgs FramerateChangedEventArgs = new(nameof(Framerate));
 
     #endregion PropertyChangedEventArgs
-
 }

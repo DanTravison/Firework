@@ -7,12 +7,12 @@ using SkiaSharp;
 /// </summary>
 internal class Spark : Particle
 {
-    const int SparkLife = 100;
-
-    // TODO: randomize _lifetime.
-    int _lifetime = SparkLife;
-    const double DegreeToRad = 0.01745329251994329576923690768489;
-
+    // Randomize life time.
+    float _lifetime = 75 + Rand.Next(25);
+    // Age threshold to reach before color starts to fade.
+    const int FadeThreshold = 10;
+    float _age;
+    
     /// <summary>
     /// Initializes a new instance of this class.
     /// </summary>
@@ -31,18 +31,19 @@ internal class Spark : Particle
     /// Gets the value indicating if the <see cref="Spark"/> is done.
     /// </summary>
     /// <returns>true if the <see cref="Spark"/> is done; otherwise, false.</returns>
-    public override bool IsDone()
+    public override bool IsDone
     {
-        return _lifetime <= 0;
+        get => _age >= _lifetime;
     }
 
     /// <summary>
     /// Updates the particle for rendering.
     /// </summary>
-    public override void Update()
+    /// <param name="particles">Not used.</param>
+    public override void Update(ParticleCollection particles)
     {
-        _lifetime--;
-        base.Update();
+        _age++;
+        base.Update(particles);
     }
 
     /// <summary>
@@ -52,8 +53,19 @@ internal class Spark : Particle
     /// <param name="paint">The <see cref="SKPaint"/> to use to draw.</param>
     protected override void OnRender(SKCanvas canvas, SKPaint paint)
     {
-        int alpha = Math.Min(_lifetime + 5, 255);
-        SKColor color = SetAlpha(Color, alpha);
+        SKColor color;
+        // delay fading the color
+        if (_age <= FadeThreshold)
+        {
+            color = Color;
+        }
+        else
+        {
+            // Fade the color based on age.
+            int alpha = (int)(((_lifetime - _age) / _lifetime) * 255);
+            color = SetAlpha(Color, alpha);
+        }
+
         base.Draw(canvas, paint, color, Meter * 0.5f);
     }
 
@@ -70,7 +82,8 @@ internal class Spark : Particle
         switch (sparkType)
         {
             case 0:
-                AddHearts(particles, x, y, SKColors.Red);
+                // AddHearts(particles, x, y, SKColors.Red);
+                AddHearts(particles, x, y, color);
                 break;
             case 1:
                 AddBalls(particles, x, y, color);
