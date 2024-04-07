@@ -5,8 +5,8 @@ namespace FireworkExperiment.Fireworks;
 internal class Trail : Particle
 {
     const int TrailLifetime = 30;
-    float _dx;
-    float _dy;
+    readonly float _dx;
+    readonly float _dy;
     int _age;
 
     public Trail(float x, float y, float dx, float dy)

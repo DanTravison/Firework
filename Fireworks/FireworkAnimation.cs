@@ -260,7 +260,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
                 int xMargin = (int)Math.Round((canvasSize.Width - xRange) / 2, 0);
 
                 int x = Particle.Rand.Next(xRange) + xMargin;
-                Particles.Add(new Firework(x, height, Framerate));
+                Particles.Add(new Firework(x, height, canvasSize.Width, canvasSize.Height, Framerate));
             }
         }
 

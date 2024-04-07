@@ -6,7 +6,25 @@ internal class Firework : Particle, IFirework
 {
     #region Fields
 
-    readonly float _floor;
+    readonly struct Range
+    {
+        public readonly float Start;
+        public readonly float End;
+
+        public Range(float start, float end)
+        {
+            Start = start;
+            End = end;
+        }
+
+        public readonly bool InBounds(float value)
+        {
+            return (value >= Start) && (value <= End);
+        }
+    }
+
+    readonly Range _rangeX;
+    readonly Range _rangeY;
     readonly bool _addTrail;
 
     #endregion Fields
@@ -17,15 +35,21 @@ internal class Firework : Particle, IFirework
     /// <param name="x">The zero-base X coordinate.</param>
     /// <param name="y">The height.</param>
     /// <param name="framerate">The frames per second of the animation.</param>
-    public Firework(float x, float y, double framerate)
+    public Firework(float x, float y, float width, float height, double framerate)
         : base(x, y)
     {
         // calculate a margin to ensure the firework doesn't go off screen
         // (top of the canvas).
-        float margin = (float)Math.Round(y * 0.2, 0);
+        float marginY = (float)Math.Round(height * 0.2, 0);
+        // set a horizontal margin to ensure firework leaves room on 
+        // either side for sparks
+        float marginX = (float)Math.Round(width * 0.1, 0);
 
         // Randomly select a floor.
-        _floor = margin / (float)(Rand.Next(4) + 1);
+        _rangeY = new Range(0, marginY / (float)(Rand.Next(4) + 1));
+
+        // Define the valid range of X
+        _rangeX = new Range(marginX, width - marginX);
 
         // Select an adjustment between 25 and 30 pixels / frame.
         AdjustY = 25 + (Rand.Next(5) + 1);
@@ -60,13 +84,14 @@ internal class Firework : Particle, IFirework
         X += AdjustX;
         AdjustY -= Gravity;
 
-        float distance = Y - _floor;
+        float distance = Y - _rangeY.End;
+
         // slow down quicker when nearing the floor.
-        if (distance < _floor * 2)
+        if (distance < _rangeY.End * 2)
         {
             AdjustY -= Gravity;
         }
-        if (_addTrail)
+        if (_addTrail && Y - _rangeY.End > AdjustY)
         {
             particles.Add(new Trail(x, y, X, Y));
         }
@@ -94,8 +119,8 @@ internal class Firework : Particle, IFirework
         int count = Rand.Next(3);
         for (int x = 0; x < count; x++)
         {
-            int half = (int) Math.Round(_floor) / 2;
-            float distance = _floor + Rand.Next(half);
+            int half = (int) Math.Round(_floorY) / 2;
+            float distance = _floorY + Rand.Next(half);
             SecondaryFirework secondary = new(this, distance, (count & 1) == 1);
             particles.Add(secondary);
         }
@@ -112,7 +137,7 @@ internal class Firework : Particle, IFirework
     /// </value>
     public override bool IsDone
     {
-        get => Y < _floor || AdjustY <= 0;
+        get => Y < _rangeY.End || X <= _rangeX.Start || X >= _rangeX.End || AdjustY <= 0;
     }
 
     #endregion IsDone
