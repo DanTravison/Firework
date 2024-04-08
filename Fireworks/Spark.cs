@@ -100,21 +100,25 @@ internal class Spark : Particle
     static void AddSparks(ParticleCollection particles, float x, float y, SKColor color)
     {
         int multiplier = 1;
+
         // Randomly double the number of sparks
         if (Rand.Next(4) == 0)
         {
             multiplier = 2;
         }
 
+        // outer zone
         for (int i = 0; i < 60 * multiplier; i++)
         {
             // NOTE: When doubled, increase the velocity by the multiplier.
+            // for a more dynamic explosion.
             double vel = (Rand.NextDouble() + .5) * 2.5 * multiplier;
             double ax = Math.Sin(i * 18 * DegreeToRad) * vel;
             double ay = Math.Cos(i * 18 * DegreeToRad) * vel;
             particles.Add(new Spark(x, y, (float)ax, (float)ay, color));
         }
 
+        // middle zone
         for (int i = 0; i < 40 * multiplier; i++)
         {
             double vel = (Rand.NextDouble() + .1) * 2.0;
@@ -123,7 +127,7 @@ internal class Spark : Particle
             particles.Add(new Spark(x, y, (float)ax, (float)ay, color));
         }
 
-
+        // inner zone
         for (int i = 0; i < 20 * multiplier; i++)
         {
             double vel = Rand.NextDouble() * 1.5;
