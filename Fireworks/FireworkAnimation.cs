@@ -36,7 +36,6 @@ public class FireworkAnimation : ObservableObject, IDisposable
     TimeSpan _delay;
     readonly int _launcherDelay;
     double _framerate = DefaultFramerate;
-    bool _running;
     DateTime _clock;
     AnimationState _state;
     Task _loopTask;
@@ -87,7 +86,6 @@ public class FireworkAnimation : ObservableObject, IDisposable
         get => _state;
         private set
         {
-            AnimationState previous = _state;
             if (SetProperty(ref _state, value, StateChangedEventArgs))
             {
                 if (_state == AnimationState.Running)
