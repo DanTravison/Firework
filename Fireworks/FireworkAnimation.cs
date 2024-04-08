@@ -80,14 +80,6 @@ public class FireworkAnimation : ObservableObject, IDisposable
     } = new();
 
     /// <summary>
-    /// Gets the value indicating if the animation is done.
-    /// </summary>
-    public bool IsDone
-    {
-        get => !_running;
-    }
-
-    /// <summary>
     /// Gets the current <see cref="AnimationState"/>.
     /// </summary>
     public AnimationState State
@@ -95,9 +87,13 @@ public class FireworkAnimation : ObservableObject, IDisposable
         get => _state;
         private set
         {
+            AnimationState previous = _state;
             if (SetProperty(ref _state, value, StateChangedEventArgs))
             {
-                _clock = DateTime.Now;
+                if (_state == AnimationState.Running)
+                {
+                    _clock = DateTime.Now;
+                }
             }
         }
     }
@@ -109,7 +105,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
     /// A zero-based value indicating the number of updates per second.
     /// </value>
     /// <remarks>
-    /// The value is throttled to the range of <see cref="MinimumFramerate"/>
+    /// The value is throttled to the Range of <see cref="MinimumFramerate"/>
     /// and <see cref="MaximumFramerate"/>.
     /// </remarks>
     public double Framerate
@@ -248,19 +244,15 @@ public class FireworkAnimation : ObservableObject, IDisposable
         SKCanvas canvas = surface.Canvas;
         SKSize canvasSize = _canvas.CanvasSize;
 
-        int height = (int)Math.Round(canvasSize.Height, 0);
-
         if (_state == AnimationState.Running)
         {
             DateTime now = DateTime.Now;
-            if ((now - _clock).TotalMilliseconds > _launcherDelay)
+            double elapsed = (now - _clock).TotalMilliseconds;
+            if (elapsed > _launcherDelay)
             {
                 _clock = now;
-                int xRange = (int)Math.Round(canvasSize.Width * 0.7, 0);
-                int xMargin = (int)Math.Round((canvasSize.Width - xRange) / 2, 0);
-
-                int x = Particle.Rand.Next(xRange) + xMargin;
-                Particles.Add(new Firework(x, height, Framerate));
+                Firework firework = new Firework(canvasSize.Width, canvasSize.Height, Framerate);
+                Particles.Add(firework);
             }
         }
 
@@ -278,17 +270,18 @@ public class FireworkAnimation : ObservableObject, IDisposable
                     Particle particle = Particles[x];
                     if (particle == null)
                     {
-                        _running = false;
+                        // TODO: Report and/or log error/warning
+                        // Possible race.
                         return;
                     }
                     if (_state == AnimationState.Running)
                     {
-                        particle.Update();
-                        if (particle.IsDone(height))
+                        particle.Update(Particles);
+                        if (particle.IsDone)
                         {
                             // insert in reverse order.
                             stale.Insert(0, x);
-                            if (particle is Firework firework)
+                            if (particle is IFirework firework)
                             {
                                 firework.Explode(Particles);
                                 continue;
@@ -352,5 +345,4 @@ public class FireworkAnimation : ObservableObject, IDisposable
     public static readonly PropertyChangedEventArgs FramerateChangedEventArgs = new(nameof(Framerate));
 
     #endregion PropertyChangedEventArgs
-
 }

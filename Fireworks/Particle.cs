@@ -25,6 +25,11 @@ internal abstract class Particle
     /// </summary>
     protected const float Gravity = GravityConstant / 50f;
 
+    /// <summary>
+    /// Constant to convert degrees to radians
+    /// </summary>
+    protected const double DegreeToRad = 0.01745329251994329576923690768489;
+
     #endregion Fields
 
     /// <summary>
@@ -114,31 +119,21 @@ internal abstract class Particle
         private set;
     }
 
+    /// <summary>
+    /// Determines if the <see cref="Particle"/> is done animating.
+    /// </summary>
+    /// <value>true if the <see cref="Particle"/> is done animating; otherwise, false.</value>
+    public virtual bool IsDone
+    {
+        get => false;
+    }
+
     #endregion Properties
-
-    /// <summary>
-    /// Determines if the <see cref="Particle"/> is done animating.
-    /// </summary>
-    /// <param name="height">The current height.</param>
-    /// <returns>true if the <see cref="Particle"/> is done animating; otherwise, false.</returns>
-    public virtual bool IsDone(int height)
-    {
-        return IsDone();
-    }
-
-    /// <summary>
-    /// Determines if the <see cref="Particle"/> is done animating.
-    /// </summary>
-    /// <returns>true if the <see cref="Particle"/> is done animating; otherwise, false.</returns>
-    public virtual bool IsDone()
-    {
-        return false;
-    }
 
     /// <summary>
     /// Updates the particle for rendering.
     /// </summary>
-    public virtual void Update()
+    public virtual void Update(ParticleCollection particles)
     {
         Y -= AdjustY;
         X += AdjustX;
@@ -171,7 +166,7 @@ internal abstract class Particle
     /// <param name="paint">The <see cref="SKPaint"/> to use to draw.</param>
     /// <param name="color">The <see cref="SKColor"/> to use to draw.</param>
     /// <param name="size">The number of items to draw.</param>
-    protected void Draw(SKCanvas canvas, SKPaint paint, SKColor color, float size)
+    protected virtual void Draw(SKCanvas canvas, SKPaint paint, SKColor color, float size)
     {
         size = (float)Math.Round(size, 0);
         paint.Color = color;
