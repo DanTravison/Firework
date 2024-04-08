@@ -16,8 +16,8 @@ internal class Spark : Particle
     /// <summary>
     /// Initializes a new instance of this class.
     /// </summary>
-    /// <param name="x">The zero-base X coordinate.</param>
-    /// <param name="y">The zero-base Y coordinate.</param>
+    /// <param name="x">The <see cref="Particle.X"/> coordinate.</param>
+    /// <param name="y">The <see cref="Particle.Y"/> coordinate.</param>
     /// <param name="adjustX">The <see cref="Particle.X"/> adjustment amount..</param>
     /// <param name="adjustY">The <see cref="Particle.Y"/> adjustment amount.</param>
     /// <param name="color">The <see cref="SKColor"/> to use to draw the <see cref="Spark"/>.</param>
@@ -74,15 +74,14 @@ internal class Spark : Particle
     /// </summary>
     /// <param name="particles">The <see cref="ParticleCollection"/> to update.</param>
     /// <param name="color">The base <see cref="SKColor"/> to use.</param>
-    /// <param name="x">The zero-based X coordinate.</param>
-    /// <param name="y">The zero-based starting Y coordinate.</param>
+    /// <param name="x">The <see cref="Particle.X"/> coordinate.</param>
+    /// <param name="y">The <see cref="Particle.Y"/> coordinate.</param>
     public static void AddSparks(ParticleCollection particles, SKColor color, float x, float y)
     {
         int sparkType = Rand.Next(4);
         switch (sparkType)
         {
             case 0:
-                // AddHearts(particles, x, y, SKColors.Red);
                 AddHearts(particles, x, y, color);
                 break;
             case 1:

@@ -18,10 +18,11 @@ internal class SecondaryFirework : Particle, IFirework
     /// Initializes a new instance of this class.
     /// </summary>
     /// <param name="firework">The <see cref="Firework"/> launching this instance.</param>
-    /// <param name="direction">The direction to change the X location,
+    /// <param name="direction">The direction to change the Left location,
     /// <para>
     /// true to increase; otherwise, false.
-    /// </para>X axis direction.</param>
+    /// </para>
+    /// </param>
     public SecondaryFirework(Firework firework, float distance, bool direction) 
         : base(firework.X, firework.Y)
     {
