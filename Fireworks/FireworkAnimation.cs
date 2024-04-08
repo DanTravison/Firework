@@ -80,14 +80,6 @@ public class FireworkAnimation : ObservableObject, IDisposable
     } = new();
 
     /// <summary>
-    /// Gets the value indicating if the animation is done.
-    /// </summary>
-    public bool IsDone
-    {
-        get => !_running;
-    }
-
-    /// <summary>
     /// Gets the current <see cref="AnimationState"/>.
     /// </summary>
     public AnimationState State
@@ -278,7 +270,8 @@ public class FireworkAnimation : ObservableObject, IDisposable
                     Particle particle = Particles[x];
                     if (particle == null)
                     {
-                        _running = false;
+                        // TODO: Report and/or log error/warning
+                        // Possible race.
                         return;
                     }
                     if (_state == AnimationState.Running)
