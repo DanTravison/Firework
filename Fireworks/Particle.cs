@@ -16,6 +16,11 @@ internal abstract class Particle
     public static readonly Random Rand = new Random();
 
     /// <summary>
+    /// Defines the age of the particle, in seconds.
+    /// </summary>
+    double _age;
+
+    /// <summary>
     /// Defines the base gravity constant.
     /// </summary>
     protected const float GravityConstant = 9.81f;
@@ -128,16 +133,71 @@ internal abstract class Particle
         get => false;
     }
 
+    /// <summary>
+    /// Gets the age of the <see cref="Particle"/>, in seconds.
+    /// </summary>
+    public double Age
+    {
+        get => _age;
+    }
+
     #endregion Properties
 
     /// <summary>
     /// Updates the particle for rendering.
     /// </summary>
-    public virtual void Update(ParticleCollection particles)
+    /// <param name="elapsed">The time since the last update; in milliseconds.</param>
+    public void Update(ParticleCollection particles, double elapsed)
+    {
+        _age += elapsed / 1000;
+        OnUpdate(particles, elapsed);
+    }
+
+    /// <summary>
+    /// Overridden in the derive class to update the <see cref="Particle"/> for rendering.
+    /// </summary>
+    /// <param name="particles">The <see cref="ParticleCollection"/> to optionally update.</param>
+    /// <param name="elapsed">The elapsed time, in milliseconds, since the last update.</param>
+    /// <remarks>
+    /// By default, <see cref="X"/> and <see cref="Y"/> are updated
+    /// <see cref="AdjustX"/> and <see cref="AdjustY"/> respectively
+    /// -and-
+    /// <see cref="AdjustX"/> is decreased by <see cref="Gravity"/>.
+    /// </remarks>
+    protected virtual void OnUpdate(ParticleCollection particles, double elapsed)
     {
         Y -= AdjustY;
         X += AdjustX;
         AdjustY -= Gravity;
+    }
+
+    /// <summary>
+    /// Fades a color based on it's maximumAge.
+    /// </summary>
+    /// <param name="fadeThreshold">The age threshold to start to fade.</param>
+    /// <param name="maximumAge">The maximum maximumAge of the <see cref="Particle"/>.</param>
+    /// <returns>The <see cref="SKColor"/> to use to render the <see cref="Parallel"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="maximumAge"/> is less than or equal to zero.
+    /// </exception>
+    protected SKColor Fade(double fadeThreshold, double maximumAge)
+    {
+        if (maximumAge <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maximumAge));
+        }
+        // delay fading the color
+        if (_age <= fadeThreshold)
+        {
+            return Color;
+        }
+        else
+        {
+            double age = Math.Min(_age, maximumAge);
+            // Fade the color based on age.
+            int alpha = (int)(255 * (maximumAge - age) / maximumAge);
+            return SetAlpha(Color, alpha);
+        }
     }
 
     /// <summary>
@@ -213,7 +273,7 @@ internal abstract class Particle
     {
         if (hue == 0)
         {
-            hue = Particle.Rand.Next(360);
+            hue = Rand.Next(360);
         }
         else
         {

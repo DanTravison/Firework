@@ -41,25 +41,22 @@ internal class Firework : Particle, IFirework
         float xMargin = (int)Math.Round(width * 0.2, 0);
         // calculate a random X value.
         X = (float) Math.Round(xMargin + (float)Rand.NextDouble() * (width - 2 * xMargin), 0);
-
         _rangeX = new(xMargin, width);
+        // Add a random small change in X
+        AdjustX = Rand.Next(10) - 5;
+
 
         // calculate a margin to ensure the firework doesn't go off screen
         // (top of the canvas).
         float marginY = (float)Math.Round(height * 0.2, 0);
-        float apogee = (float)Math.Round(marginY / (float)(Rand.Next(4) + 1), 0);
         // Randomly select a Y limit.
+        float apogee = (float)Math.Round(marginY / (float)(Rand.Next(4) + 1), 0);
+
+        // TODO: Need a better calculation for degrading the speed. This approach
+        // causes Y to reach zero too soon on lower heights.
         _rangeY = new Range(height, apogee);
+        AdjustY = height / (float)framerate;
 
-        if (apogee > 500)
-        {
-            _rangeY = new(height, _rangeY.Distance * .02f);
-        }
-
-        AdjustY = _rangeY.Distance / (float)framerate;
-        // Add a random small change in X
-        AdjustX = Rand.Next(10) - 5;
-        
         // Randomly select a color.
         Color = Rand.Next(4) == 0 ? SKColors.DarkRed : FromHue();
         // randomly draw a trail
@@ -70,7 +67,8 @@ internal class Firework : Particle, IFirework
     /// Updates the <see cref="Firework"/> for rendering.
     /// </summary>
     /// <param name="particles">The <see cref="ParticleCollection"/> to update.</param>
-    public override void Update(ParticleCollection particles)
+    /// <param name="elapsed">The time since the last update; in milliseconds.</param>
+    protected override void OnUpdate(ParticleCollection particles, double elapsed)
     {
         float x = X;
         float y = Y;
@@ -90,6 +88,8 @@ internal class Firework : Particle, IFirework
         {
             particles.Add(new Trail(x, y, X, Y));
         }
+
+        Color = SetAlpha(Color, 32);
     }
 
     /// <summary>
@@ -99,8 +99,7 @@ internal class Firework : Particle, IFirework
     /// <param name="paint">The <see cref="SKPaint"/> to use to draw.</param>
     protected override void OnRender(SKCanvas canvas, SKPaint paint)
     {
-        SKColor color = SetAlpha(Color, 32);
-        Draw(canvas, paint, color, Meter * 0.8f);
+        Draw(canvas, paint, Color, Meter * 0.8f);
     }
 
     /// <summary>

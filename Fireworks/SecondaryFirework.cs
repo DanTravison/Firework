@@ -45,7 +45,8 @@ internal class SecondaryFirework : Particle, IFirework
     /// <summary>
     /// Updates the <see cref="SecondaryFirework"/> for rendering.
     /// </summary>
-    public override void Update(ParticleCollection particles)
+    /// <param name="elapsed">The time since the last update; in milliseconds.</param>
+    protected override void OnUpdate(ParticleCollection particles, double elapsed)
     {
         Y += AdjustY;
         X += AdjustX;

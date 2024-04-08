@@ -7,11 +7,15 @@ using SkiaSharp;
 /// </summary>
 internal class Spark : Particle
 {
-    // Randomize life time.
-    float _lifetime = 75 + Rand.Next(25);
-    // Age threshold to reach before color starts to fade.
-    const int FadeThreshold = 10;
-    float _age;
+    /// <summary>
+    /// Randomize the maximum <see cref="Particle.Age"/>.
+    /// </summary>
+    double _maximumAge = 12.0 * (Rand.NextDouble() + .25);
+    
+    /// <summary>
+    /// The <see cref="Particle.Age"/> to reach before color starts to fade.
+    /// </summary>
+    const double FadeThreshold = .25;
     
     /// <summary>
     /// Initializes a new instance of this class.
@@ -24,6 +28,7 @@ internal class Spark : Particle
     public Spark(float x, float y, float adjustX, float adjustY, SKColor color)
         : base(x, y, adjustX, adjustY)
     {
+        // TODO: Consider increasing _maximumAge for 'taller' animations
         Color = color;
     }
 
@@ -33,17 +38,18 @@ internal class Spark : Particle
     /// <returns>true if the <see cref="Spark"/> is done; otherwise, false.</returns>
     public override bool IsDone
     {
-        get => _age >= _lifetime;
+        get => Age >= _maximumAge;
     }
 
     /// <summary>
-    /// Updates the particle for rendering.
+    /// Updates the <see cref="Spark"/> for rendering.
     /// </summary>
-    /// <param name="particles">Not used.</param>
-    public override void Update(ParticleCollection particles)
+    /// <param name="particles">The <see cref="ParticleCollection"/> to optionally update - not used.</param>
+    /// <param name="elapsed">The elapsed time, in milliseconds, since the last update.</param>
+    protected override void OnUpdate(ParticleCollection particles, double elapsed)
     {
-        _age++;
-        base.Update(particles);
+        base.OnUpdate(particles, elapsed);
+        Color = Fade(FadeThreshold, _maximumAge);
     }
 
     /// <summary>
@@ -53,20 +59,7 @@ internal class Spark : Particle
     /// <param name="paint">The <see cref="SKPaint"/> to use to draw.</param>
     protected override void OnRender(SKCanvas canvas, SKPaint paint)
     {
-        SKColor color;
-        // delay fading the color
-        if (_age <= FadeThreshold)
-        {
-            color = Color;
-        }
-        else
-        {
-            // Fade the color based on age.
-            int alpha = (int)(((_lifetime - _age) / _lifetime) * 255);
-            color = SetAlpha(Color, alpha);
-        }
-
-        base.Draw(canvas, paint, color, Meter * 0.5f);
+        base.Draw(canvas, paint, Color, Meter * 0.5f);
     }
 
     /// <summary>

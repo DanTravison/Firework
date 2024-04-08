@@ -242,10 +242,11 @@ public class FireworkAnimation : ObservableObject, IDisposable
         SKCanvas canvas = surface.Canvas;
         SKSize canvasSize = _canvas.CanvasSize;
 
+        double elapsed = 0;
         if (_state == AnimationState.Running)
         {
             DateTime now = DateTime.Now;
-            double elapsed = (now - _clock).TotalMilliseconds;
+            elapsed = (now - _clock).TotalMilliseconds;
             if (elapsed > _launcherDelay)
             {
                 _clock = now;
@@ -274,7 +275,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
                     }
                     if (_state == AnimationState.Running)
                     {
-                        particle.Update(Particles);
+                        particle.Update(Particles, elapsed);
                         if (particle.IsDone)
                         {
                             // insert in reverse order.
