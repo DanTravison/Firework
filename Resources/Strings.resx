@@ -117,6 +117,18 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="FramerateText" xml:space="preserve">
+    <value>Frame rate:</value>
+  </data>
+  <data name="FramerateTooltipText" xml:space="preserve">
+    <value>The number of frames per second.</value>
+  </data>
+  <data name="LaunchesText" xml:space="preserve">
+    <value>Launches:</value>
+  </data>
+  <data name="LaunchesTooltipText" xml:space="preserve">
+    <value>The number of fireworks to launch per second.</value>
+  </data>
   <data name="PauseText" xml:space="preserve">
     <value>Pause/Resume</value>
   </data>

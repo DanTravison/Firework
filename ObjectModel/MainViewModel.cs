@@ -1,6 +1,7 @@
 ﻿using FireworkExperiment.Fireworks;
 using FireworkExperiment.Resources;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace FireworkExperiment.ObjectModel;
 
@@ -24,7 +25,7 @@ internal class MainViewModel : ObservableObject
     /// <summary>
     /// Gets the minimum <see cref="FireworkAnimation.Framerate"/>.
     /// </summary>
-    public double MinimumSpeed
+    public double MinimumFramerate
     {
         get;
     } = FireworkAnimation.MinimumFramerate;
@@ -32,7 +33,7 @@ internal class MainViewModel : ObservableObject
     /// <summary>
     /// Gets the maximum <see cref="FireworkAnimation.Framerate"/>.
     /// </summary>
-    public double MaximumSpeed
+    public double MaximumFramerate
     {
         get;
     } = FireworkAnimation.MaximumFramerate;
@@ -62,6 +63,22 @@ internal class MainViewModel : ObservableObject
             }
         }
     }
+
+    /// <summary>
+    /// Gets the minimum number of launches per second.
+    /// </summary>
+    public int MinimumLaunches
+    {
+        get;
+    } = FireworkAnimation.MinimumLaunches;
+
+    /// <summary>
+    /// Gets the maximum number of launches per second.
+    /// </summary>
+    public int MaximumLaunches
+    {
+        get;
+    } = FireworkAnimation.MaximumLaunches;
 
     #endregion Properties
 

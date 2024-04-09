@@ -61,6 +61,42 @@ namespace FireworkExperiment.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Frame rate:.
+        /// </summary>
+        internal static string FramerateText {
+            get {
+                return ResourceManager.GetString("FramerateText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The number of frames per second..
+        /// </summary>
+        internal static string FramerateTooltipText {
+            get {
+                return ResourceManager.GetString("FramerateTooltipText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Launches:.
+        /// </summary>
+        internal static string LaunchesText {
+            get {
+                return ResourceManager.GetString("LaunchesText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The number of fireworks to launch per second..
+        /// </summary>
+        internal static string LaunchesTooltipText {
+            get {
+                return ResourceManager.GetString("LaunchesTooltipText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Pause/Resume.
         /// </summary>
         internal static string PauseText {

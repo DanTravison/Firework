@@ -27,6 +27,7 @@ internal class Command : ObservableObject, ICommand
         _action = action;
         _isEnabled = isEnabled;
         _glyph = glyph;
+        _description = description;
     }
 
     /// <summary>
