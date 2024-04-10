@@ -37,15 +37,6 @@ internal class Firework : Particle, IFirework
     public Firework(float width, float height, double framerate)
         : base(0, height)
     {
-        // calculate a margin to prevent the X from outside the width.
-        float xMargin = (int)Math.Round(width * 0.2, 0);
-        // calculate a random X value.
-        X = (float) Math.Round(xMargin + (float)Rand.NextDouble() * (width - 2 * xMargin), 0);
-        _rangeX = new(xMargin, width);
-        // Add a random small change in X
-        AdjustX = Rand.Next(10) - 5;
-
-
         // calculate a margin to ensure the firework doesn't go off screen
         // (top of the canvas).
         float marginY = (float)Math.Round(height * 0.2, 0);
@@ -56,6 +47,17 @@ internal class Firework : Particle, IFirework
         // causes Y to reach zero too soon on lower heights.
         _rangeY = new Range(height, apogee);
         AdjustY = height / (float)framerate;
+
+        // calculate a margin to prevent the X from outside the width.
+        float xMargin = (int)Math.Round(width * 0.2, 0);
+        // calculate a random X value.
+        X = (float)Math.Round(xMargin + (float)Rand.NextDouble() * (width - 2 * xMargin), 0);
+        
+        _rangeX = new(xMargin, width);
+
+        // Add a random small change in X for 2/3 of the launches
+        int multiplier = Rand.Next(3) - 1;
+        AdjustX = multiplier * (height * 0.15f) / (float)framerate;
 
         // Randomly select a color.
         Color = Rand.Next(4) == 0 ? SKColors.DarkRed : FromHue();
@@ -73,7 +75,7 @@ internal class Firework : Particle, IFirework
         float x = X;
         float y = Y;
 
-        Y -= AdjustY;
+        Y -= AdjustY; 
         X += AdjustX;
 
         // The ascent is powered for the first 1/3 of the ascent.
