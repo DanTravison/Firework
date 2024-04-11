@@ -25,6 +25,7 @@ internal class Firework : Particle, IFirework
     readonly Range _rangeX;
     readonly Range _rangeY;
     readonly bool _addTrail;
+    readonly double _framerate;
 
     #endregion Fields
 
@@ -39,17 +40,17 @@ internal class Firework : Particle, IFirework
     {
         // calculate a margin to ensure the firework doesn't go off screen
         // (top of the canvas).
-        float marginY = (float)Math.Round(height * 0.2, 0);
+        float marginY = (float)Math.Round(height * 0.3, 0);
+
         // Randomly select a Y limit.
         float apogee = (float)Math.Round(marginY / (float)(Rand.Next(4) + 1), 0);
 
-        // TODO: Need a better calculation for degrading the speed. This approach
-        // causes Y to reach zero too soon on lower heights.
         _rangeY = new Range(height, apogee);
         float vy = height / (float)framerate;
 
         // calculate a margin to prevent the X from outside the width.
         float xMargin = (int)Math.Round(width * 0.2, 0);
+
         // calculate a random X value.
         float x = (float)Math.Round(xMargin + (float)Rand.NextDouble() * (width - 2 * xMargin), 0);
         
@@ -59,8 +60,9 @@ internal class Firework : Particle, IFirework
         int multiplier = Rand.Next(3) - 1;
         float vx = multiplier * (height * 0.15f) / (float)framerate;
 
-        Velocity = new(vx, vy);
+        Delta = new(vx, vy);
         Location = new(x, height);
+        _framerate = framerate;
 
         // Randomly select a color.
         Color = Rand.Next(4) == 0 ? SKColors.DarkRed : FromHue();
@@ -77,17 +79,18 @@ internal class Firework : Particle, IFirework
     {
         Vector previous = Location.Clone();
 
-        Location = Location.Add(Velocity.X, -Velocity.Y);
+        Location = Location.Add(Delta.X, -Delta.Y);
 
         // The ascent is powered for the first 1/3 of the ascent.
-        float distance = _rangeY.Start - Location.Y;
+        float distance = _rangeY.End - Location.Y;
         if (distance >= _rangeY.Distance / 3)
         {
             // power is zero - impart gravity.
-            Velocity = Velocity.Add(0, -Gravity);
+            float vy = GravityConstant * (distance / (float)_framerate);
+            Delta = Delta.Add(0, vy);
         }
 
-        if (_addTrail && Location.Y - _rangeY.End > Velocity.Y)
+        if (_addTrail && Location.Y - _rangeY.End > Delta.Y)
         {
             particles.Add(new Trail(previous, Location));
         }
@@ -124,10 +127,10 @@ internal class Firework : Particle, IFirework
     /// </value>
     public override bool IsDone
     {
-        get => Location.Y < _rangeY.End 
-            || Location.X <= _rangeX.Start 
-            || Location.X >= _rangeX.End 
-            || Velocity.Y <= 0;
+        get => Location.Y < _rangeY.End
+            || Location.X <= _rangeX.Start
+            || Location.X >= _rangeX.End
+            || Delta.Y <= 0;
     }
 
     #endregion IsDone

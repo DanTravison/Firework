@@ -61,7 +61,7 @@ internal abstract class Particle
     {
         _lifetime = lifetime >= 0 ? lifetime : 0;
         Location = location;
-        Velocity = velocity;
+        Delta = velocity;
     }
 
     #region Properties
@@ -85,9 +85,9 @@ internal abstract class Particle
     }
 
     /// <summary>
-    /// Gets the <see cref="Vector"/> for the current velocity.
+    /// Gets the <see cref="Vector"/> for the change in <see cref="Location"/>
     /// </summary>
-    public Vector Velocity
+    public Vector Delta
     {
         get;
         protected set;
@@ -109,14 +109,14 @@ internal abstract class Particle
     /// Determines if the <see cref="Particle"/> is done animating.
     /// </summary>
     /// <value>
-    /// true if <see cref="Velocity"/> is zero
+    /// true if <see cref="Delta"/> is zero
     /// -or-
     /// <see cref="Lifetime"/> has been set and <see cref="Age"/> is greater
     /// than or equal to <see cref="Lifetime"/>.
     /// </value>
     public virtual bool IsDone
     {
-        get => (Velocity.X == 0 && Velocity.Y == 0) || (_lifetime > 0 && _age >= _lifetime);
+        get => (Delta.X == 0 && Delta.Y == 0) || (_lifetime > 0 && _age >= _lifetime);
     }
 
     /// <summary>
@@ -129,7 +129,7 @@ internal abstract class Particle
 
     /// <summary>
     /// Gets the maximum age of the <see cref="Particle"/>, in seconds.
-    /// </summary>                         e
+    /// </summary>
     /// <value>
     /// The maximum age of the <see cref="Particle"/>, in seconds; otherwise,
     /// zero if the particle does not age.
@@ -158,14 +158,14 @@ internal abstract class Particle
     /// <param name="particles">The <see cref="ParticleCollection"/> to optionally update.</param>
     /// <param name="elapsed">The elapsed time, in milliseconds, since the last update.</param>
     /// <remarks>
-    /// By default, <see cref="Location"/> updated with the associated <see cref="Velocity"/> values
+    /// By default, <see cref="Location"/> updated with the associated <see cref="Delta"/> values
     /// -and-
     /// <see cref="Velocity.Y"/> is decreased by <see cref="Gravity"/>.
     /// </remarks>
     protected virtual void OnUpdate(ParticleCollection particles, double elapsed)
     {
-        Location = Location.Add(Velocity.X, -Velocity.Y);
-        Velocity = Velocity.Add(0, - Gravity);
+        Location = Location.Add(Delta.X, -Delta.Y);
+        Delta = Delta.Add(0, - Gravity);
     }
 
     /// <summary>

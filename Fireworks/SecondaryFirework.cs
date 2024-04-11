@@ -28,7 +28,7 @@ internal class SecondaryFirework : Particle, IFirework
     {
         _baseX = firework.Location.X;
         _distance = distance;
-        Velocity = new(direction ? -5 : 5, 15);
+        Delta = new(direction ? -5 : 5, 15);
         Color = SetAlpha(firework.Color, firework.Color.Alpha / 2);
     }
 
@@ -47,8 +47,8 @@ internal class SecondaryFirework : Particle, IFirework
     /// <param name="elapsed">The time since the last update; in milliseconds.</param>
     protected override void OnUpdate(ParticleCollection particles, double elapsed)
     {
-        Location = new Vector(Location.X + Velocity.X, Location.Y + Velocity.Y);
-        Velocity = new(Velocity.X, Velocity.Y + Gravity);
+        Location = new Vector(Location.X + Delta.X, Location.Y + Delta.Y);
+        Delta = new(Delta.X, Delta.Y + Gravity);
     }
 
     /// <summary>
