@@ -16,9 +16,14 @@ internal abstract class Particle
     public static readonly Random Rand = new Random();
 
     /// <summary>
-    /// Defines the age of the particle, in seconds.
+    /// Defines the age of the <see cref="Particle"/>, in seconds.
     /// </summary>
     double _age;
+
+    /// <summary>
+    /// Defines the maximum lifetime of the <see cref="Particle"/>. in seconds.
+    /// </summary>
+    double _lifetime;
 
     /// <summary>
     /// Defines the base gravity constant.
@@ -40,27 +45,23 @@ internal abstract class Particle
     /// <summary>
     /// Initializes a new instance of this class.
     /// </summary>
-    /// <param name="x">The zero-base X coordinate.</param>
-    /// <param name="y">The zero-base Y coordinate.</param>
-    protected Particle(float x, float y)
+    protected Particle()
+        : this(Vector.Zero, Vector.Zero, 0)
     {
-        X = x;
-        Y = y;
-        Meter = y / 100;
     }
 
     /// <summary>
     /// Initializes a new instance of this class.
     /// </summary>
-    /// <param name="x">The zero-base X coordinate.</param>
-    /// <param name="y">The zero-base Y coordinate.</param>
-    /// <param name="adjustX">The X adjustment amount.</param>
-    /// <param name="adjustY">The Y adjustment amount.</param>
-    protected Particle(float x, float y, float adjustX, float adjustY)
-        : this(x, y)
+    /// <param name="location">The <see cref="Vector"/> defining the starting location.</param>
+    /// <param name="velocity">The <see cref="Vector"/> defining the starting velocity.</param>
+    /// <param name="lifetime">The <see cref="Lifetime"/> of the particle; otherwise, 
+    /// zero if the particle does not have a maximum lifetime.</param>
+    protected Particle(Vector location, Vector velocity, double lifetime = 0)
     {
-        AdjustX = adjustX;
-        AdjustY = adjustY;
+        _lifetime = lifetime >= 0 ? lifetime : 0;
+        Location = location;
+        Velocity = velocity;
     }
 
     #region Properties
@@ -75,50 +76,30 @@ internal abstract class Particle
     }
 
     /// <summary>
-    /// Gets the X coordinate.
+    /// Gets the <see cref="Vector"/> for the current location.
     /// </summary>
-    public float X
+    public Vector Location
     {
         get;
         protected set;
     }
 
     /// <summary>
-    /// Gets the Y coordinate.
+    /// Gets the <see cref="Vector"/> for the current velocity.
     /// </summary>
-    public float Y
+    public Vector Velocity
     {
         get;
         protected set;
     }
 
     /// <summary>
-    /// Gets the X adjustment.
-    /// </summary>
-    protected float AdjustX
-    {
-        get;
-        set;
-    }
-
-    /// <summary>
-    /// Gets the Y adjustment.
-    /// </summary>
-    protected float AdjustY
-    {
-        get;
-        set;
-    }
-
-    /// <summary>
-    /// Gets the meter to use to draw.
+    /// Gets the size metric to use to calculate the particle size when drawing.
     /// </summary>
     /// <remarks>
     /// This property is only valid within <see cref="OnRender"/>.
     /// </remarks>
-    /// <exception cref="InvalidOperationException">This property is not valid
-    /// outside <see cref="OnRender"/>.</exception>
-    protected float Meter
+    protected float SizeMetric
     {
         get;
         private set;
@@ -127,10 +108,15 @@ internal abstract class Particle
     /// <summary>
     /// Determines if the <see cref="Particle"/> is done animating.
     /// </summary>
-    /// <value>true if the <see cref="Particle"/> is done animating; otherwise, false.</value>
+    /// <value>
+    /// true if <see cref="Velocity"/> is zero
+    /// -or-
+    /// <see cref="Lifetime"/> has been set and <see cref="Age"/> is greater
+    /// than or equal to <see cref="Lifetime"/>.
+    /// </value>
     public virtual bool IsDone
     {
-        get => false;
+        get => (Velocity.X == 0 && Velocity.Y == 0) || (_lifetime > 0 && _age >= _lifetime);
     }
 
     /// <summary>
@@ -139,6 +125,19 @@ internal abstract class Particle
     public double Age
     {
         get => _age;
+    }
+
+    /// <summary>
+    /// Gets the maximum age of the <see cref="Particle"/>, in seconds.
+    /// </summary>                         e
+    /// <value>
+    /// The maximum age of the <see cref="Particle"/>, in seconds; otherwise,
+    /// zero if the particle does not age.
+    /// </value>
+    public double Lifetime
+    {
+        get => _lifetime;
+        protected set => _lifetime = value;
     }
 
     #endregion Properties
@@ -154,21 +153,19 @@ internal abstract class Particle
     }
 
     /// <summary>
-    /// Overridden in the derive class to update the <see cref="Particle"/> for rendering.
+    /// Overridden in the derived class to update the <see cref="Particle"/> for rendering.
     /// </summary>
     /// <param name="particles">The <see cref="ParticleCollection"/> to optionally update.</param>
     /// <param name="elapsed">The elapsed time, in milliseconds, since the last update.</param>
     /// <remarks>
-    /// By default, <see cref="X"/> and <see cref="Y"/> are updated
-    /// <see cref="AdjustX"/> and <see cref="AdjustY"/> respectively
+    /// By default, <see cref="Location"/> updated with the associated <see cref="Velocity"/> values
     /// -and-
-    /// <see cref="AdjustX"/> is decreased by <see cref="Gravity"/>.
+    /// <see cref="Velocity.Y"/> is decreased by <see cref="Gravity"/>.
     /// </remarks>
     protected virtual void OnUpdate(ParticleCollection particles, double elapsed)
     {
-        Y -= AdjustY;
-        X += AdjustX;
-        AdjustY -= Gravity;
+        Location = Location.Add(Velocity.X, -Velocity.Y);
+        Velocity = Velocity.Add(0, - Gravity);
     }
 
     /// <summary>
@@ -208,7 +205,7 @@ internal abstract class Particle
     /// <param name="paint">The <see cref="SKPaint"/> to use to draw.</param>
     public void Render(SKCanvas canvas, SKSize canvasSize, SKPaint paint)
     {
-        Meter = canvasSize.Height / 100;
+        SizeMetric = canvasSize.Height / 100;
         OnRender(canvas, paint);
     }
 
@@ -231,10 +228,13 @@ internal abstract class Particle
         size = (float)Math.Round(size, 0);
         paint.Color = color;
 
+        float lx = Location.X;
+        float ly = Location.Y;
+
         for (int i = 0; i < size; i++)
         {
-            float x = X - (size - i);
-            float y = Y - 1 - i;
+            float x = lx - (size - i);
+            float y = ly - 1 - i;
             float w = size * 2 - (2 * i);
             float h = 2 + (2 * i);
 

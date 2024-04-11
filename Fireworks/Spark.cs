@@ -1,6 +1,7 @@
 ﻿namespace FireworkExperiment.Fireworks;
 
 using SkiaSharp;
+using System.Runtime.Intrinsics.X86;
 
 /// <summary>
 /// Provides a spark <see cref="Particle"/>.
@@ -8,27 +9,20 @@ using SkiaSharp;
 internal class Spark : Particle
 {
     /// <summary>
-    /// Randomize the maximum <see cref="Particle.Age"/>.
-    /// </summary>
-    double _maximumAge = 12.0 * (Rand.NextDouble() + .25);
-    
-    /// <summary>
     /// The <see cref="Particle.Age"/> to reach before color starts to fade.
     /// </summary>
     const double FadeThreshold = .25;
-    
-    /// <summary>
-    /// Initializes a new instance of this class.
-    /// </summary>
-    /// <param name="x">The <see cref="Particle.X"/> coordinate.</param>
-    /// <param name="y">The <see cref="Particle.Y"/> coordinate.</param>
-    /// <param name="adjustX">The <see cref="Particle.X"/> adjustment amount..</param>
-    /// <param name="adjustY">The <see cref="Particle.Y"/> adjustment amount.</param>
-    /// <param name="color">The <see cref="SKColor"/> to use to draw the <see cref="Spark"/>.</param>
-    public Spark(float x, float y, float adjustX, float adjustY, SKColor color)
-        : base(x, y, adjustX, adjustY)
+
+    static double SparkLifetime
     {
-        // TODO: Consider increasing _maximumAge for 'taller' animations
+        // Randomize the maximum lifetime.
+        // TODO: Consider increasing Lifetime for 'taller' animations
+        get => 12.0 * (Rand.NextDouble() + .25);
+    }
+
+    public Spark(Vector location, Vector velocity, SKColor color)
+        : base(location, velocity, SparkLifetime)
+    {
         Color = color;
     }
 
@@ -38,7 +32,7 @@ internal class Spark : Particle
     /// <returns>true if the <see cref="Spark"/> is done; otherwise, false.</returns>
     public override bool IsDone
     {
-        get => Age >= _maximumAge;
+        get => Age >= Lifetime;
     }
 
     /// <summary>
@@ -49,7 +43,7 @@ internal class Spark : Particle
     protected override void OnUpdate(ParticleCollection particles, double elapsed)
     {
         base.OnUpdate(particles, elapsed);
-        Color = Fade(FadeThreshold, _maximumAge);
+        Color = Fade(FadeThreshold, Lifetime);
     }
 
     /// <summary>
@@ -59,7 +53,7 @@ internal class Spark : Particle
     /// <param name="paint">The <see cref="SKPaint"/> to use to draw.</param>
     protected override void OnRender(SKCanvas canvas, SKPaint paint)
     {
-        base.Draw(canvas, paint, Color, Meter * 0.5f);
+        base.Draw(canvas, paint, Color, SizeMetric * 0.5f);
     }
 
     /// <summary>
@@ -67,37 +61,37 @@ internal class Spark : Particle
     /// </summary>
     /// <param name="particles">The <see cref="ParticleCollection"/> to update.</param>
     /// <param name="color">The base <see cref="SKColor"/> to use.</param>
-    /// <param name="x">The <see cref="Particle.X"/> coordinate.</param>
-    /// <param name="y">The <see cref="Particle.Y"/> coordinate.</param>
-    public static void AddSparks(ParticleCollection particles, SKColor color, float x, float y)
+    /// <param name="location">The <see cref="Vector"/> for the starting location.</param>
+    public static void AddSparks(ParticleCollection particles, SKColor color, Vector location)
     {
         int sparkType = Rand.Next(4);
         switch (sparkType)
         {
             case 0:
-                AddHearts(particles, x, y, color);
+                AddHearts(particles, location, color);
                 break;
             case 1:
-                AddBalls(particles, x, y, color);
+                AddBalls(particles, location, color);
                 break;
             default:
-                AddSparks(particles, x, y, color);
+                AddSparks(particles, location, color);
                 break;
         }
     }
 
-    static void AddBalls(ParticleCollection particles, float x, float y, SKColor color)
+    static void AddBalls(ParticleCollection particles, Vector location, SKColor color)
     {
         for (int i = 0; i < 80; i++)
         {
             double vel = Rand.NextDouble() * 1.2;
             double ax = Math.Sin(i * 4.5 * DegreeToRad) * vel;
             double ay = Math.Cos(i * 4.5 * DegreeToRad) * vel;
-            particles.Add(new Spark(x, y, (float)ax, (float)ay, color));
+            Vector velocity = new((float)ax, (float)ay);
+            particles.Add(new Spark(location, velocity, color));
         }
     }
 
-    static void AddSparks(ParticleCollection particles, float x, float y, SKColor color)
+    static void AddSparks(ParticleCollection particles, Vector location, SKColor color)
     {
         int multiplier = 1;
 
@@ -115,7 +109,8 @@ internal class Spark : Particle
             double vel = (Rand.NextDouble() + .5) * 2.5 * multiplier;
             double ax = Math.Sin(i * 18 * DegreeToRad) * vel;
             double ay = Math.Cos(i * 18 * DegreeToRad) * vel;
-            particles.Add(new Spark(x, y, (float)ax, (float)ay, color));
+            Vector velocity = new((float)ax, (float)ay);
+            particles.Add(new Spark(location,  velocity, color));
         }
 
         // middle zone
@@ -124,7 +119,9 @@ internal class Spark : Particle
             double vel = (Rand.NextDouble() + .1) * 2.0;
             double ax = Math.Sin(i * 18 * DegreeToRad) * vel;
             double ay = Math.Cos(i * 18 * DegreeToRad) * vel;
-            particles.Add(new Spark(x, y, (float)ax, (float)ay, color));
+            Vector velocity = new((float)ax, (float)ay);
+
+            particles.Add(new Spark(location, velocity, color));
         }
 
         // inner zone
@@ -133,11 +130,13 @@ internal class Spark : Particle
             double vel = Rand.NextDouble() * 1.5;
             double ax = Math.Sin(i * 36 * DegreeToRad) * vel;
             double ay = Math.Cos(i * 36 * DegreeToRad) * vel;
-            particles.Add(new Spark(x, y, (float)ax, (float)ay, FromHue(color.Hue + 180)));
+            Vector velocity = new((float)ax, (float)ay);
+
+            particles.Add(new Spark(location, velocity, FromHue(color.Hue + 180)));
         }
     }
 
-    static void AddHearts(ParticleCollection particles, float x, float y, SKColor color)
+    static void AddHearts(ParticleCollection particles, Vector location, SKColor color)
     {
         for (int i = 0; i < 60; i++)
         {
@@ -148,7 +147,9 @@ internal class Spark : Particle
             double vel = Heart(x2) * (0.7 + Rand.NextDouble() * 0.3);
             double ax = Math.Sin(x2 * DegreeToRad) * vel * f;
             double ay = Math.Cos(x2 * DegreeToRad) * vel;
-            particles.Add(new Spark(x, y, (float)ax, (float)ay, color));
+            Vector velocity = new((float)ax, (float)ay);
+
+            particles.Add(new Spark(location, velocity, color));
         }
     }
 

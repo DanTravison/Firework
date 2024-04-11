@@ -12,34 +12,26 @@ internal class Trail : Particle
     const double MaximumAge = 3.0;
 
     /// <summary>
-    /// The <see cref="Particle.Age"/> threshold to reach before color starts to fade.
+    /// The <see cref="Particle.Age"/> threshold to reach before the color starts to fade.
     /// </summary>
     const double FadeThreshold = .75;
 
     /// <summary>
-    /// The previous <see cref="Particle.X"/> coordinate.
+    /// The previous <see cref="Particle.Location"/>.
     /// </summary>
-    readonly float _dx;
-
-    /// <summary>
-    /// The previous <see cref="Particle.Y"/> coordinate.
-    /// </summary>
-    readonly float _dy;
+    readonly Vector _previous;
 
     #endregion Fields
 
     /// <summary>
     /// Initializes a new instance of this class.
     /// </summary>
-    /// <param name="x">The current <see cref="Particle.X"/> coordinate.</param>
-    /// <param name="y">The current <see cref="Particle.Y"/> coordinate.</param>
-    /// <param name="dx">The previous <see cref="Particle.X"/> coordinate.</param>
-    /// <param name="dy">The previous <see cref="Particle.Y"/> coordinate.</param>
-    public Trail(float x, float y, float dx, float dy)
-        : base (x, y)
+    /// <param name="location">The <see cref="Vector"/> for the current <see cref="Particle.Location"/>.</param>
+    /// <param name="previous">The <see cref="Vector"/> for the previous location.</param>
+    public Trail(Vector location, Vector previous)
+        : base (location, Vector.Zero, MaximumAge)
     {
-        _dx = dx;
-        _dy = dy;
+        _previous = previous;
         Color = SKColors.Gainsboro;
     }
 
@@ -51,7 +43,7 @@ internal class Trail : Particle
     /// </value>
     public override bool IsDone
     {
-        get => Age >= MaximumAge;
+        get => Age >= Lifetime;
     }
 
     /// <summary>
@@ -60,7 +52,7 @@ internal class Trail : Particle
     /// <param name="elapsed">The time since the last update; in milliseconds.</param>
     protected override void OnUpdate(ParticleCollection particles, double elapsed)
     {
-        // NOTE: not adjusting X or Y.
+        // NOTE: not adjusting for location.
         Color = Fade(FadeThreshold, MaximumAge);
     }
 
@@ -74,7 +66,6 @@ internal class Trail : Particle
         Draw(canvas, paint, Color, 1);
     }
 
-
     /// <summary>
     /// Draws the <see cref="Trail"/>.
     /// </summary>
@@ -86,6 +77,6 @@ internal class Trail : Particle
     {
         paint.Color = color;
         paint.StrokeWidth = 1;
-        canvas.DrawLine(X, Y, _dx, _dy, paint);
+        canvas.DrawLine(Location.X, Location.Y, _previous.X, _previous.Y, paint);
     }
 }

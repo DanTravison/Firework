@@ -24,12 +24,11 @@ internal class SecondaryFirework : Particle, IFirework
     /// </para>
     /// </param>
     public SecondaryFirework(Firework firework, float distance, bool direction) 
-        : base(firework.X, firework.Y)
+        : base(firework.Location, Vector.Zero)
     {
-        _baseX = firework.X;
+        _baseX = firework.Location.X;
         _distance = distance;
-        AdjustX = direction ? -5 : 5;
-        AdjustY = 15;
+        Velocity = new(direction ? -5 : 5, 15);
         Color = SetAlpha(firework.Color, firework.Color.Alpha / 2);
     }
 
@@ -39,7 +38,7 @@ internal class SecondaryFirework : Particle, IFirework
     /// <value>true if the <see cref="SecondaryFirework"/> is done animating; otherwise, false.</value>
     public override bool IsDone
     {
-        get => Math.Abs(X - _baseX) >= _distance;
+        get => Math.Abs(Location.X - _baseX) >= _distance;
     }
 
     /// <summary>
@@ -48,9 +47,8 @@ internal class SecondaryFirework : Particle, IFirework
     /// <param name="elapsed">The time since the last update; in milliseconds.</param>
     protected override void OnUpdate(ParticleCollection particles, double elapsed)
     {
-        Y += AdjustY;
-        X += AdjustX;
-        AdjustY += Gravity;
+        Location = new Vector(Location.X + Velocity.X, Location.Y + Velocity.Y);
+        Velocity = new(Velocity.X, Velocity.Y + Gravity);
     }
 
     /// <summary>
@@ -59,7 +57,7 @@ internal class SecondaryFirework : Particle, IFirework
     /// <param name="particles">The <see cref="ParticleCollection"/> to update.</param>
     public void Explode(ParticleCollection particles)
     {
-        Spark.AddSparks(particles, Color, X, Y);
+        Spark.AddSparks(particles, Color, Location);
     }
 
     /// <summary>
@@ -69,6 +67,6 @@ internal class SecondaryFirework : Particle, IFirework
     /// <param name="paint">The <see cref="SKPaint"/> to use to draw.</param>
     protected override void OnRender(SKCanvas canvas, SKPaint paint)
     {
-        Draw(canvas, paint, Color, Meter * 0.8f);
+        Draw(canvas, paint, Color, SizeMetric * 0.8f);
     }
 }

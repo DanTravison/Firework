@@ -35,7 +35,7 @@ internal class Firework : Particle, IFirework
     /// <param name="height">The height of the animation.</param>
     /// <param name="framerate">The frames per second.</param>
     public Firework(float width, float height, double framerate)
-        : base(0, height)
+        : base()
     {
         // calculate a margin to ensure the firework doesn't go off screen
         // (top of the canvas).
@@ -46,18 +46,21 @@ internal class Firework : Particle, IFirework
         // TODO: Need a better calculation for degrading the speed. This approach
         // causes Y to reach zero too soon on lower heights.
         _rangeY = new Range(height, apogee);
-        AdjustY = height / (float)framerate;
+        float vy = height / (float)framerate;
 
         // calculate a margin to prevent the X from outside the width.
         float xMargin = (int)Math.Round(width * 0.2, 0);
         // calculate a random X value.
-        X = (float)Math.Round(xMargin + (float)Rand.NextDouble() * (width - 2 * xMargin), 0);
+        float x = (float)Math.Round(xMargin + (float)Rand.NextDouble() * (width - 2 * xMargin), 0);
         
         _rangeX = new(xMargin, width);
 
         // Add a random small change in X for 2/3 of the launches
         int multiplier = Rand.Next(3) - 1;
-        AdjustX = multiplier * (height * 0.15f) / (float)framerate;
+        float vx = multiplier * (height * 0.15f) / (float)framerate;
+
+        Velocity = new(vx, vy);
+        Location = new(x, height);
 
         // Randomly select a color.
         Color = Rand.Next(4) == 0 ? SKColors.DarkRed : FromHue();
@@ -72,23 +75,21 @@ internal class Firework : Particle, IFirework
     /// <param name="elapsed">The time since the last update; in milliseconds.</param>
     protected override void OnUpdate(ParticleCollection particles, double elapsed)
     {
-        float x = X;
-        float y = Y;
+        Vector previous = Location.Clone();
 
-        Y -= AdjustY; 
-        X += AdjustX;
+        Location = Location.Add(Velocity.X, -Velocity.Y);
 
         // The ascent is powered for the first 1/3 of the ascent.
-        float distance = _rangeY.Start - Y;
+        float distance = _rangeY.Start - Location.Y;
         if (distance >= _rangeY.Distance / 3)
         {
             // power is zero - impart gravity.
-            AdjustY -= Gravity;
+            Velocity = Velocity.Add(0, -Gravity);
         }
 
-        if (_addTrail && Y - _rangeY.End > AdjustY)
+        if (_addTrail && Location.Y - _rangeY.End > Velocity.Y)
         {
-            particles.Add(new Trail(x, y, X, Y));
+            particles.Add(new Trail(previous, Location));
         }
 
         Color = SetAlpha(Color, 32);
@@ -101,7 +102,7 @@ internal class Firework : Particle, IFirework
     /// <param name="paint">The <see cref="SKPaint"/> to use to draw.</param>
     protected override void OnRender(SKCanvas canvas, SKPaint paint)
     {
-        Draw(canvas, paint, Color, Meter * 0.8f);
+        Draw(canvas, paint, Color, SizeMetric * 0.8f);
     }
 
     /// <summary>
@@ -110,7 +111,7 @@ internal class Firework : Particle, IFirework
     /// <param name="particles">The <see cref="ParticleCollection"/> to update.</param>
     public void Explode(ParticleCollection particles)
     {
-        Spark.AddSparks(particles, Color, X, Y);
+        Spark.AddSparks(particles, Color, Location);
      }
 
     #region IsDone
@@ -123,7 +124,10 @@ internal class Firework : Particle, IFirework
     /// </value>
     public override bool IsDone
     {
-        get => Y < _rangeY.End || X <= _rangeX.Start || X >= _rangeX.End || AdjustY <= 0;
+        get => Location.Y < _rangeY.End 
+            || Location.X <= _rangeX.Start 
+            || Location.X >= _rangeX.End 
+            || Velocity.Y <= 0;
     }
 
     #endregion IsDone
