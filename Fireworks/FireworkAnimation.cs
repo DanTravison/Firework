@@ -218,6 +218,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
         if (_state != AnimationState.Stopped)
         {
             State = AnimationState.Stopped;
+            Particles.Clear();
             _loopTask = null;
         }
     }

@@ -23,8 +23,8 @@ internal class SecondaryFirework : Particle, IFirework
     /// true to increase; otherwise, false.
     /// </para>
     /// </param>
-    public SecondaryFirework(Firework firework, float distance, bool direction) 
-        : base(firework.Location, Vector.Zero)
+    public SecondaryFirework(Firework firework, float distance, bool direction, double framerate) 
+        : base(firework.Location, Vector.Zero, framerate)
     {
         _baseX = firework.Location.X;
         _distance = distance;
@@ -57,7 +57,7 @@ internal class SecondaryFirework : Particle, IFirework
     /// <param name="particles">The <see cref="ParticleCollection"/> to update.</param>
     public void Explode(ParticleCollection particles)
     {
-        Spark.AddSparks(particles, Color, Location);
+        Spark.AddSparks(particles, Color, Location, Framerate);
     }
 
     /// <summary>

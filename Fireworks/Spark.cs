@@ -1,7 +1,6 @@
 ﻿namespace FireworkExperiment.Fireworks;
 
 using SkiaSharp;
-using System.Runtime.Intrinsics.X86;
 
 /// <summary>
 /// Provides a spark <see cref="Particle"/>.
@@ -9,19 +8,23 @@ using System.Runtime.Intrinsics.X86;
 internal class Spark : Particle
 {
     /// <summary>
-    /// The <see cref="Particle.Age"/> to reach before color starts to fade.
+    /// The <see cref="Particle.Age"/> in seconds to reach before color starts to fade.
     /// </summary>
-    const double FadeThreshold = .25;
+    const double FadeThreshold = 1;
+
+    /// <summary>
+    /// Defines the initial velocity for launch. (pixels per second)
+    /// </summary>
+    protected const double InitialVelocity = 300;
 
     static double SparkLifetime
     {
         // Randomize the maximum lifetime.
-        // TODO: Consider increasing Lifetime for 'taller' animations
-        get => 12.0 * (Rand.NextDouble() + .25);
+        get => 6 * (Rand.NextDouble() + .25);
     }
 
-    public Spark(Vector location, Vector velocity, SKColor color)
-        : base(location, velocity, SparkLifetime)
+    public Spark(Vector location, Vector velocity, SKColor color, double framerate)
+        : base(location, velocity, framerate, SparkLifetime)
     {
         Color = color;
     }
@@ -42,8 +45,10 @@ internal class Spark : Particle
     /// <param name="elapsed">The elapsed time, in milliseconds, since the last update.</param>
     protected override void OnUpdate(ParticleCollection particles, double elapsed)
     {
-        base.OnUpdate(particles, elapsed);
-        Color = Fade(FadeThreshold, Lifetime);
+        // TODO: Update to decouple Delta from CPU speed.
+        Location = Location.Add(Delta.X, -Delta.Y);
+        Delta = Delta.Add(0, -Gravity);
+        Color = Fade(FadeThreshold);
     }
 
     /// <summary>
@@ -62,37 +67,47 @@ internal class Spark : Particle
     /// <param name="particles">The <see cref="ParticleCollection"/> to update.</param>
     /// <param name="color">The base <see cref="SKColor"/> to use.</param>
     /// <param name="location">The <see cref="Vector"/> for the starting location.</param>
-    public static void AddSparks(ParticleCollection particles, SKColor color, Vector location)
+    /// <param name="framerate">The animation frame rate (Frames per second)</param>
+    public static void AddSparks(ParticleCollection particles, SKColor color, Vector location, double framerate)
     {
+        // TODO: Update velocity calculations.
+        // Ideally, velocity should be a function of age.
+        // Currently:
+        //    for slower framerates - sparks flood the view.
+        //    for faster framerates - sparks fade too quickly
         int sparkType = Rand.Next(4);
+        
         switch (sparkType)
         {
             case 0:
-                AddHearts(particles, location, color);
+                AddHearts(particles, location, color, framerate);
                 break;
             case 1:
-                AddBalls(particles, location, color);
+                AddBalls(particles, location, color, framerate);
                 break;
             default:
-                AddSparks(particles, location, color);
+                AddSparks(particles, location, color, framerate);
                 break;
         }
     }
 
-    static void AddBalls(ParticleCollection particles, Vector location, SKColor color)
+    static void AddBalls(ParticleCollection particles, Vector location, SKColor color, double framerate)
     {
+        double velocity = (InitialVelocity / framerate) * .5;
+
         for (int i = 0; i < 80; i++)
         {
-            double vel = Rand.NextDouble() * 1.2;
+            double vel = (Rand.NextDouble() + .1) * velocity;
             double ax = Math.Sin(i * 4.5 * DegreeToRad) * vel;
             double ay = Math.Cos(i * 4.5 * DegreeToRad) * vel;
-            Vector velocity = new((float)ax, (float)ay);
-            particles.Add(new Spark(location, velocity, color));
+            Vector delta = new((float)ax, (float)ay);
+            particles.Add(new Spark(location, delta, color, framerate));
         }
     }
 
-    static void AddSparks(ParticleCollection particles, Vector location, SKColor color)
+    static void AddSparks(ParticleCollection particles, Vector location, SKColor color, double framerate)
     {
+        double velocity = InitialVelocity / framerate;
         int multiplier = 1;
 
         // Randomly double the number of sparks
@@ -106,37 +121,37 @@ internal class Spark : Particle
         {
             // NOTE: When doubled, increase the velocity by the multiplier.
             // for a more dynamic explosion.
-            double vel = (Rand.NextDouble() + .5) * 2.5 * multiplier;
+            double vel = multiplier * (Rand.NextDouble() + .5) * velocity;
             double ax = Math.Sin(i * 18 * DegreeToRad) * vel;
             double ay = Math.Cos(i * 18 * DegreeToRad) * vel;
-            Vector velocity = new((float)ax, (float)ay);
-            particles.Add(new Spark(location,  velocity, color));
+            Vector delta = new((float)ax, (float)ay);
+            particles.Add(new Spark(location, delta, color, framerate));
         }
 
         // middle zone
         for (int i = 0; i < 40 * multiplier; i++)
         {
-            double vel = (Rand.NextDouble() + .1) * 2.0;
+            double vel = (Rand.NextDouble() + .1) * velocity;
             double ax = Math.Sin(i * 18 * DegreeToRad) * vel;
             double ay = Math.Cos(i * 18 * DegreeToRad) * vel;
-            Vector velocity = new((float)ax, (float)ay);
+            Vector delta = new((float)ax, (float)ay);
 
-            particles.Add(new Spark(location, velocity, color));
+            particles.Add(new Spark(location, delta, color, framerate));
         }
 
         // inner zone
         for (int i = 0; i < 20 * multiplier; i++)
         {
-            double vel = Rand.NextDouble() * 1.5;
+            double vel = (Rand.NextDouble() + 1.5) * velocity;
             double ax = Math.Sin(i * 36 * DegreeToRad) * vel;
             double ay = Math.Cos(i * 36 * DegreeToRad) * vel;
-            Vector velocity = new((float)ax, (float)ay);
+            Vector delta = new((float)ax, (float)ay);
 
-            particles.Add(new Spark(location, velocity, FromHue(color.Hue + 180)));
+            particles.Add(new Spark(location, delta, FromHue(color.Hue + 180), framerate));
         }
     }
 
-    static void AddHearts(ParticleCollection particles, Vector location, SKColor color)
+    static void AddHearts(ParticleCollection particles, Vector location, SKColor color, double framerate)
     {
         for (int i = 0; i < 60; i++)
         {
@@ -149,7 +164,7 @@ internal class Spark : Particle
             double ay = Math.Cos(x2 * DegreeToRad) * vel;
             Vector velocity = new((float)ax, (float)ay);
 
-            particles.Add(new Spark(location, velocity, color));
+            particles.Add(new Spark(location, velocity, color, framerate));
         }
     }
 

@@ -45,8 +45,9 @@ internal abstract class Particle
     /// <summary>
     /// Initializes a new instance of this class.
     /// </summary>
-    protected Particle()
-        : this(Vector.Zero, Vector.Zero, 0)
+    /// <param name="framerate">The animation frames per second.</param>
+    protected Particle(double framerate)
+        : this(Vector.Zero, Vector.Zero, framerate, 0)
     {
     }
 
@@ -55,13 +56,15 @@ internal abstract class Particle
     /// </summary>
     /// <param name="location">The <see cref="Vector"/> defining the starting location.</param>
     /// <param name="velocity">The <see cref="Vector"/> defining the starting velocity.</param>
+    /// <param name="framerate">The animation frames per second.</param>
     /// <param name="lifetime">The <see cref="Lifetime"/> of the particle; otherwise, 
     /// zero if the particle does not have a maximum lifetime.</param>
-    protected Particle(Vector location, Vector velocity, double lifetime = 0)
+    protected Particle(Vector location, Vector velocity, double framerate, double lifetime = 0)
     {
         _lifetime = lifetime >= 0 ? lifetime : 0;
         Location = location;
         Delta = velocity;
+        Framerate = framerate;
     }
 
     #region Properties
@@ -140,6 +143,14 @@ internal abstract class Particle
         protected set => _lifetime = value;
     }
 
+    /// <summary>
+    /// Gets the animation framerate (frames per second)
+    /// </summary>
+    public double Framerate
+    {
+        get;
+    }
+
     #endregion Properties
 
     /// <summary>
@@ -164,8 +175,6 @@ internal abstract class Particle
     /// </remarks>
     protected virtual void OnUpdate(ParticleCollection particles, double elapsed)
     {
-        Location = Location.Add(Delta.X, -Delta.Y);
-        Delta = Delta.Add(0, - Gravity);
     }
 
     /// <summary>
@@ -177,22 +186,18 @@ internal abstract class Particle
     /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="maximumAge"/> is less than or equal to zero.
     /// </exception>
-    protected SKColor Fade(double fadeThreshold, double maximumAge)
+    protected SKColor Fade(double fadeThreshold)
     {
-        if (maximumAge <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maximumAge));
-        }
         // delay fading the color
-        if (_age <= fadeThreshold)
+        if (_age <= fadeThreshold || Lifetime <= 0)
         {
             return Color;
         }
         else
         {
-            double age = Math.Min(_age, maximumAge);
+            double age = Math.Min(_age, Lifetime);
             // Fade the color based on age.
-            int alpha = (int)(255 * (maximumAge - age) / maximumAge);
+            int alpha = (int)(255 * ((Lifetime - age) / Lifetime));
             return SetAlpha(Color, alpha);
         }
     }
@@ -205,7 +210,7 @@ internal abstract class Particle
     /// <param name="paint">The <see cref="SKPaint"/> to use to draw.</param>
     public void Render(SKCanvas canvas, SKSize canvasSize, SKPaint paint)
     {
-        SizeMetric = canvasSize.Height / 100;
+        SizeMetric = canvasSize.Height / 125;
         OnRender(canvas, paint);
     }
 
@@ -225,7 +230,8 @@ internal abstract class Particle
     /// <param name="size">The number of items to draw.</param>
     protected virtual void Draw(SKCanvas canvas, SKPaint paint, SKColor color, float size)
     {
-        size = (float)Math.Round(size, 0);
+        // Ensure a minimum size of the particle.
+        size = Math.Max((float)Math.Round(size, 0), 3);
         paint.Color = color;
 
         float lx = Location.X;

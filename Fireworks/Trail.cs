@@ -28,8 +28,8 @@ internal class Trail : Particle
     /// </summary>
     /// <param name="location">The <see cref="Vector"/> for the current <see cref="Particle.Location"/>.</param>
     /// <param name="previous">The <see cref="Vector"/> for the previous location.</param>
-    public Trail(Vector location, Vector previous)
-        : base (location, Vector.Zero, MaximumAge)
+    public Trail(Vector location, Vector previous, double framerate)
+        : base (location, Vector.Zero, framerate, MaximumAge)
     {
         _previous = previous;
         Color = SKColors.Gainsboro;
@@ -53,7 +53,7 @@ internal class Trail : Particle
     protected override void OnUpdate(ParticleCollection particles, double elapsed)
     {
         // NOTE: not adjusting for location.
-        Color = Fade(FadeThreshold, MaximumAge);
+        Color = Fade(FadeThreshold);
     }
 
     /// <summary>
