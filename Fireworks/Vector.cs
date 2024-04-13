@@ -1,8 +1,11 @@
-﻿namespace FireworkExperiment.Fireworks;
+﻿using System.Diagnostics;
+
+namespace FireworkExperiment.Fireworks;
 
 /// <summary>
 /// Provides a floating point 2-dimensional vector.
 /// </summary>
+[DebuggerDisplay("{X}x{Y}")]
 internal readonly struct Vector
 {
     /// <summary>

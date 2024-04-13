@@ -3,6 +3,9 @@
 using SkiaSharp;
 using System.Diagnostics;
 
+/// <summary>
+/// Provides an <see cref="IFirework"/> <see cref="Particle"/>.
+/// </summary>
 internal class Firework : Particle, IFirework
 {
     #region Fields

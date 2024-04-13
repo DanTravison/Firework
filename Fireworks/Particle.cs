@@ -1,11 +1,13 @@
 ﻿namespace FireworkExperiment.Fireworks;
 
 using SkiaSharp;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 /// <summary>
 /// Provides an abstract particle base class.
 /// </summary>
+[DebuggerDisplay("{Location.X, Location.Y}@{Delta.X, Delta.Y}")]
 internal abstract class Particle
 {
     #region Fields
@@ -168,11 +170,6 @@ internal abstract class Particle
     /// </summary>
     /// <param name="particles">The <see cref="ParticleCollection"/> to optionally update.</param>
     /// <param name="elapsed">The elapsed time, in milliseconds, since the last update.</param>
-    /// <remarks>
-    /// By default, <see cref="Location"/> updated with the associated <see cref="Delta"/> values
-    /// -and-
-    /// <see cref="Velocity.Y"/> is decreased by <see cref="Gravity"/>.
-    /// </remarks>
     protected virtual void OnUpdate(ParticleCollection particles, double elapsed)
     {
     }
@@ -181,12 +178,8 @@ internal abstract class Particle
     /// Fades a color based on it's maximumAge.
     /// </summary>
     /// <param name="fadeThreshold">The age threshold to start to fade.</param>
-    /// <param name="maximumAge">The maximum maximumAge of the <see cref="Particle"/>.</param>
     /// <returns>The <see cref="SKColor"/> to use to render the <see cref="Parallel"/>.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// <paramref name="maximumAge"/> is less than or equal to zero.
-    /// </exception>
-    protected SKColor Fade(double fadeThreshold)
+     protected SKColor Fade(double fadeThreshold)
     {
         // delay fading the color
         if (_age <= fadeThreshold || Lifetime <= 0)

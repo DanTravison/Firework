@@ -2,6 +2,9 @@
 
 namespace FireworkExperiment.Fireworks;
 
+/// <summary>
+/// Provides a 'contrail' <see cref="Particle"/>.
+/// </summary>
 internal class Trail : Particle
 {
     #region Fields

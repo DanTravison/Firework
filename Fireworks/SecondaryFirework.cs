@@ -3,7 +3,7 @@
 namespace FireworkExperiment.Fireworks;
 
 /// <summary>
-/// Provides a secondary firework.
+/// Provides an secondary <see cref="IFirework"/> <see cref="Particle"/>.
 /// </summary>
 /// <remarks>
 /// Concept: Allow a firework to randomly split and launch two or more secondary firework instances. 
