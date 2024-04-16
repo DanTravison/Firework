@@ -11,8 +11,8 @@ namespace FireworkExperiment.Fireworks;
 /// </remarks>
 internal class SecondaryFirework : Particle, IFirework
 {
-    float _distance;
-    float _baseX;
+    readonly float _distance;
+    readonly float _baseX;
 
     /// <summary>
     /// Initializes a new instance of this class.
@@ -57,7 +57,7 @@ internal class SecondaryFirework : Particle, IFirework
     /// <param name="particles">The <see cref="ParticleCollection"/> to update.</param>
     public void Explode(ParticleCollection particles)
     {
-        Spark.AddSparks(particles, Color, Location, Framerate);
+        Spark.AddSparks(this, particles);
     }
 
     /// <summary>

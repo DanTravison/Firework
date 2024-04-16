@@ -29,7 +29,7 @@ internal class Spark : Particle
         /// <summary>
         /// 'Explosive' spark
         /// </summary>
-        Spark
+        Burst
     }
 
     /// <summary>
@@ -109,32 +109,36 @@ internal class Spark : Particle
     }
 
     /// <summary>
-    /// Randomly adds <see cref="Spark"/> elements.
+    /// Randomly adds <see cref="Spark"/> elements to a <see cref="Firework"/>.
     /// </summary>
+    /// <param name="firework">The <see cref="Firework"/> generating the sparks.</param>
     /// <param name="particles">The <see cref="ParticleCollection"/> to update.</param>
-    /// <param name="color">The base <see cref="SKColor"/> to use.</param>
-    /// <param name="location">The <see cref="Vector"/> for the starting location.</param>
-    /// <param name="framerate">The animation frame rate (Frames per second)</param>
-    public static void AddSparks(ParticleCollection particles, SKColor color, Vector location, double framerate)
+    public static void AddSparks(IFirework firework, ParticleCollection particles)
     {
         int sparkType = Rand.Next(4);
 
         if (sparkType == (int)SparkType.Heart)
         {
-            AddHearts(particles, location, color, framerate);
+            AddHeart(particles, firework.Location, firework.Color, firework.Framerate);
         }
         else if (sparkType == (int)SparkType.Ball)
         {
-            AddBalls(particles, location, color, framerate);
+            AddBall(particles, firework.Location, firework.Color, firework.Framerate);
         }
         else
         {
-            AddSparks(particles, location, color, framerate);
+            AddBurst(particles, firework.Location, firework.Framerate);
         }
     }
 
-
-    static void AddBalls(ParticleCollection particles, Vector location, SKColor color, double framerate)
+    /// <summary>
+    /// Adds a 'Ball' spark.
+    /// </summary>
+    /// <param name="particles">The <see cref="ParticleCollection"/> to update.</param>
+    /// <param name="location">The <see cref="Vector"/> for the location to add.</param>
+    /// <param name="color">The base color for the sparks.</param>
+    /// <param name="framerate">The animation framerate.</param>
+    public static void AddBall(ParticleCollection particles, Vector location, SKColor color, double framerate)
     {
         double velocity = BallVelocity / framerate;
 
@@ -148,7 +152,13 @@ internal class Spark : Particle
         }
     }
 
-    static void AddSparks(ParticleCollection particles, Vector location, SKColor color, double framerate)
+    /// <summary>
+    /// Adds a 'Burst' spark.
+    /// </summary>
+    /// <param name="particles">The <see cref="ParticleCollection"/> to update.</param>
+    /// <param name="location">The <see cref="Vector"/> for the location to add.</param>
+    /// <param name="framerate">The animation framerate.</param>
+    public static void AddBurst(ParticleCollection particles, Vector location, double framerate)
     {
         double velocity = SparkVelocity / framerate;
         int multiplier = 1;
@@ -159,17 +169,20 @@ internal class Spark : Particle
             multiplier = 2;
         }
 
+
         // outer zone - Largest spread.
+        SKColor color = FromHue();
         for (int i = 0; i < 60 * multiplier; i++)
         {
             double vel = multiplier * (Rand.NextDouble() + .5) * velocity;
             double dx = Math.Sin(i * 18 * DegreeToRad) * vel;
             double dy = Math.Cos(i * 18 * DegreeToRad) * vel;
             Vector delta = new((float)dx, (float)dy);
-            particles.Add(new Spark(SparkType.Spark, location, delta, color, framerate));
+            particles.Add(new Spark(SparkType.Burst, location, delta, color, framerate));
         }
 
         // middle zone - medium spread.
+        color = FromHue();
         for (int i = 0; i < 40 * multiplier; i++)
         {
             double vel = (Rand.NextDouble() + .25) * velocity;
@@ -177,10 +190,12 @@ internal class Spark : Particle
             double dy = Math.Cos(i * 18 * DegreeToRad) * vel;
             Vector delta = new((float)dx, (float)dy);
 
-            particles.Add(new Spark(SparkType.Spark, location, delta, color, framerate));
+            particles.Add(new Spark(SparkType.Burst, location, delta, color, framerate));
         }
 
+
         // inner zone - smallest spread.
+        color = FromHue();
         for (int i = 0; i < 20 * multiplier; i++)
         {
             double vel = (Rand.NextDouble() + .1) * velocity;
@@ -188,11 +203,18 @@ internal class Spark : Particle
             double dy = Math.Cos(i * 36 * DegreeToRad) * vel;
             Vector delta = new((float)dx,  (float)dy);
 
-            particles.Add(new Spark(SparkType.Spark, location, delta, FromHue(color.Hue + 180), framerate));
+            particles.Add(new Spark(SparkType.Burst, location, delta, color, framerate));
         }
     }
 
-    static void AddHearts(ParticleCollection particles, Vector location, SKColor color, double framerate)
+    /// <summary>
+    /// Adds a 'Heart' particle.
+    /// </summary>
+    /// <param name="particles">The <see cref="ParticleCollection"/> to update.</param>
+    /// <param name="location">The <see cref="Vector"/> for the location to add.</param>
+    /// <param name="color">The base color for the sparks.</param>
+    /// <param name="framerate">The animation framerate.</param>
+    public static void AddHeart(ParticleCollection particles, Vector location, SKColor color, double framerate)
     {
         double velocity = HeartVelocity / framerate;
 

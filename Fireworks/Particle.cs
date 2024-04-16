@@ -263,6 +263,10 @@ internal abstract class Particle
         return new SKColor(color.Red, color.Green, color.Blue, (byte)alpha);
     }
 
+    // Define two hue ranges that produce reasonably 'bright' colors.
+    static readonly Vector _lowHues = new(0, 70);
+    static readonly Vector _highHues = new(160, 50);
+
     /// <summary>
     /// Gets an <see cref="SKColor"/> from a hue.
     /// </summary>
@@ -272,41 +276,22 @@ internal abstract class Particle
     {
         if (hue == 0)
         {
-            hue = Rand.Next(360);
+            if (Rand.Next(2) == 0)
+            {
+                // select from the low order hue values.
+                hue = Rand.Next((int)_lowHues.Y) + _lowHues.X;
+            }
+            else
+            {
+                // select from the high order hue values.
+                hue = Rand.Next((int)_highHues.Y) + _highHues.X;
+            }
         }
         else
         {
             hue = hue % 360;
         }
-
-        int hueTransform = (int)(255 * ((hue % 60) / 60.0));
-
-        if (hue >= 0 && hue < 60)
-        {
-            return FromARGB(255, 255, hueTransform, 0);
-        }
-        if (hue >= 60 && hue < 120)
-        {
-            return FromARGB(255, 255 - hueTransform, 255, 0);
-        }
-        if (hue >= 120 && hue < 180)
-        {
-            return FromARGB(255, 0, 255, hueTransform);
-        }
-        if (hue >= 180 && hue < 240)
-        {
-            return FromARGB(255, 0, 255 - hueTransform, 255);
-        }
-        if (hue >= 240 && hue < 300)
-        {
-            return FromARGB(255, hueTransform, 0, 255);
-        }
-        if (hue >= 300 && hue < 360)
-        {
-            return FromARGB(255, 255, 0, 255 - hueTransform);
-        }
-
-        return new SKColor(255, 255, 255, 255);
+        return SKColor.FromHsl(hue, 100, 50, 255);
     }
 
     /// <summary>

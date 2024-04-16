@@ -337,10 +337,23 @@ public class FireworkAnimation : ObservableObject, IDisposable
                     {
                         // TODO: Report and/or log error/warning
                         // Possible race.
+                        if (Debugger.IsAttached)
+                        {
+                            Debugger.Break();
+                        }
                         return;
                     }
                     if (_state == AnimationState.Running)
                     {
+                        if (frameDelay == 0)
+                        {
+                            // TODO: Report and/or log error/warning
+                            if (Debugger.IsAttached)
+                            {
+                                Debugger.Break();
+                            }
+                            return;
+                        }
                         particle.Update(Particles, frameDelay);
                         if (particle.IsDone)
                         {

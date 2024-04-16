@@ -52,9 +52,9 @@ internal class Firework : Particle, IFirework
         // The apogee is randomly selected for each.
         // The vertical velocity is fixed for a portion of the launch
         // then gravity is applied.
-        // The launch Y coordinate is always the bottom of the 
-        // view while the X coordinate is randomly selected. 
-        
+        // The launch Y coordinate is always the bottom of the
+        // view while the X coordinate is randomly selected.
+
         // Explosion occurs when one of three conditions is met.
         // 1: The apogee is reached (_rangeY.End)
         // 2: Velocity is less than or equal to zero (Delta.Y).
@@ -105,7 +105,7 @@ internal class Firework : Particle, IFirework
         Location = new(x, height);
 
         // Randomly select a color.
-        Color = Rand.Next(4) == 0 ? SKColors.DarkRed : FromHue();
+        Color = Rand.Next(4) == 0 ? SKColors.Crimson : FromHue(180);
 
         // randomly draw a trail
         _addTrail = Rand.Next(4) < 2;
@@ -129,7 +129,7 @@ internal class Firework : Particle, IFirework
         {
             // power is zero - impart gravity.
             float dy = GravityConstant * (distance / (float)Framerate);
-            
+
             // float dy = Delta.Y - Gravity;
             Delta = new(Delta.X, dy);
         }
@@ -161,7 +161,7 @@ internal class Firework : Particle, IFirework
     public void Explode(ParticleCollection particles)
     {
         // NOTE: The type of spark is random.
-        Spark.AddSparks(particles, Color, Location, Framerate);
+        Spark.AddSparks(this, particles);
      }
 
     #region IsDone
