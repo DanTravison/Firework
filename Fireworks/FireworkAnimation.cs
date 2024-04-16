@@ -58,7 +58,12 @@ public class FireworkAnimation : ObservableObject, IDisposable
     /// <summary>
     /// Stopwatch used to time launches.
     /// </summary>
-    Stopwatch _launcher = new();
+    readonly Stopwatch _launchClock = new();
+
+    /// <summary>
+    /// Stopwatch used to time frameDelay time between OnPaint calls.
+    /// </summary>
+    readonly Stopwatch _frameClock = new();
 
     // Frames per second
     double _framerate = DefaultFramerate;
@@ -118,11 +123,13 @@ public class FireworkAnimation : ObservableObject, IDisposable
             {
                 if (_state == AnimationState.Running)
                 {
-                    _launcher.Restart();
+                    _launchClock.Restart();
+                    _frameClock.Restart();
                 }
                 else
                 {
-                    _launcher.Stop();
+                    _launchClock.Stop();
+                    _frameClock.Stop();
                 }
             }
         }
@@ -294,21 +301,29 @@ public class FireworkAnimation : ObservableObject, IDisposable
         SKCanvas canvas = surface.Canvas;
         SKSize canvasSize = _canvas.CanvasSize;
 
-        double elapsed = 0;
+        double frameDelay = _frameClock.ElapsedMilliseconds;
+        _frameClock.Restart();
+
         if (_state == AnimationState.Running)
         {
-            elapsed = _launcher.ElapsedMilliseconds;
-            if (elapsed >= _launchDelay)
+            double launchDelay = _launchClock.ElapsedMilliseconds;
+
+            if (launchDelay >= _launchDelay)
             {
                 Firework firework = new Firework(canvasSize.Width, canvasSize.Height, Framerate);
                 Particles.Add(firework);
-                _launcher.Restart();
+                _launchClock.Restart();
             }
         }
 
         if (_state != AnimationState.Stopped && Particles.Count > 0)
         {
             List<int> stale = [];
+
+            if (_state == AnimationState.Paused)
+            {
+                frameDelay = 0;
+            }
 
             using (SKPaint paint = new())
             {
@@ -326,7 +341,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
                     }
                     if (_state == AnimationState.Running)
                     {
-                        particle.Update(Particles, elapsed);
+                        particle.Update(Particles, frameDelay);
                         if (particle.IsDone)
                         {
                             // insert in reverse order.
@@ -344,6 +359,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
                     }
                     particle.Render(canvas, canvasSize, paint);
                 }
+                
             }
             if (stale.Count > 0)
             {

@@ -35,7 +35,7 @@ internal class Spark : Particle
     /// <summary>
     /// The <see cref="Particle.Age"/> in seconds to reach before color starts to fade.
     /// </summary>
-    const double FadeThreshold = 1;
+    const double FadeThreshold = .25;
 
     /// <summary>
     /// The initial velocity of an expanding heard. (pixels per second)
@@ -60,7 +60,7 @@ internal class Spark : Particle
     static double SparkLifetime
     {
         // Randomize the maximum lifetime.
-        get => 3 + Rand.Next(3);
+        get => .75 + Rand.NextDouble();
     }
 
     private Spark(SparkType type, Vector location, Vector velocity, SKColor color, double framerate)
@@ -76,7 +76,7 @@ internal class Spark : Particle
     /// <returns>true if the <see cref="Spark"/> is done; otherwise, false.</returns>
     public override bool IsDone
     {
-        get => Age >= Lifetime;
+        get => Age >= Lifetime || Color.Alpha == 0;
     }
 
     /// <summary>

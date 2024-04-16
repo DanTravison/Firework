@@ -10,14 +10,14 @@ internal class Trail : Particle
     #region Fields
 
     /// <summary>
-    /// The maximum <see cref="Particle.Age"/>.
+    /// The maximum <see cref="Particle.Age"/> (in seconds).
     /// </summary>
-    const double MaximumAge = 3.0;
+    const double MaximumAge = .75;
 
     /// <summary>
-    /// The <see cref="Particle.Age"/> threshold to reach before the color starts to fade.
+    /// The <see cref="Particle.Age"/> threshold to reach before the color starts to fade (in seconds).
     /// </summary>
-    const double FadeThreshold = .75;
+    const double FadeThreshold = .1;
 
     /// <summary>
     /// The previous <see cref="Particle.Location"/>.
@@ -35,7 +35,8 @@ internal class Trail : Particle
         : base (location, Vector.Zero, framerate, MaximumAge)
     {
         _previous = previous;
-        Color = SKColors.Gainsboro;
+        // Use a color that has some contrast on white backgrounds.
+        Color = SKColors.Gold;
     }
 
     /// <summary>
