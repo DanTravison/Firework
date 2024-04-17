@@ -105,7 +105,7 @@ internal class Firework : Particle, IFirework
         Location = new(x, height);
 
         // Randomly select a color.
-        Color = Rand.Next(4) == 0 ? SKColors.Crimson : FromHue(180);
+        Color = Rand.Next(4) == 0 ? SKColors.Crimson : FromHue();
 
         // randomly draw a trail
         _addTrail = Rand.Next(4) < 2;
