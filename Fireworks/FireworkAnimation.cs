@@ -43,7 +43,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
     /// Defines the default number of frames per second.
     /// </summary>
     public const double DefaultFramerate = 60;
-    
+
     #endregion Constants
 
     #region Fields
@@ -67,7 +67,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
 
     // Frames per second
     double _framerate = DefaultFramerate;
-    
+
     // The animation loop's cycle length
     TimeSpan _delay;
 
@@ -217,7 +217,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
     /// Stops the animation
     /// </summary>
     /// <returns>
-    /// true if the animation was stopped; otherwise, false if the animation 
+    /// true if the animation was stopped; otherwise, false if the animation
     /// was not running or was paused.
     /// </returns>
     public void Stop()
@@ -270,7 +270,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
     /// Invalidate the canvas on the UI thread.
     /// </summary>
     /// <returns>
-    /// true if the invalidate was queued; otherwise, false if it 
+    /// true if the invalidate was queued; otherwise, false if it
     /// the canvas is no longer valid.
     /// </returns>
     bool Invalidate()
@@ -336,22 +336,24 @@ public class FireworkAnimation : ObservableObject, IDisposable
                     if (particle == null)
                     {
                         // TODO: Report and/or log error/warning
-                        // Possible race.
+                        // possible race.
                         if (Debugger.IsAttached)
                         {
                             Debugger.Break();
                         }
+                        // TODO: Clean up the Particles collection and continue?
                         return;
                     }
                     if (_state == AnimationState.Running)
                     {
                         if (frameDelay == 0)
                         {
-                            // TODO: Report and/or log error/warning
-                            if (Debugger.IsAttached)
-                            {
-                                Debugger.Break();
-                            }
+                            // NOTE: This is a timing issue that can occur
+                            // if OnPaint's time is near or greater than the framerate,
+                            // -or-
+                            // a resize occurs while an OnPaint is in progress.
+                            // 
+                            // In either case, defer the paint to the next InvalidateSurface call.
                             return;
                         }
                         particle.Update(Particles, frameDelay);
@@ -372,7 +374,6 @@ public class FireworkAnimation : ObservableObject, IDisposable
                     }
                     particle.Render(canvas, canvasSize, paint);
                 }
-                
             }
             if (stale.Count > 0)
             {
