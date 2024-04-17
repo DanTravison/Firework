@@ -4,6 +4,7 @@
              xmlns:local="clr-namespace:FireworkExperiment"
              xmlns:objectmodel="clr-namespace:FireworkExperiment.ObjectModel"
              xmlns:fireworks="clr-namespace:FireworkExperiment.Fireworks"
+             xmlns:res="clr-namespace:FireworkExperiment.Resources"
              xmlns:skia="clr-namespace:SkiaSharp.Views.Maui.Controls;assembly=SkiaSharp.Views.Maui.Controls"
              x:Class="FireworkExperiment.MainPage"
              x:DataType="objectmodel:MainViewModel">
@@ -16,7 +17,7 @@
         <Style TargetType="Label" x:Key="TextStyle">
             <Setter Property="FontSize" Value="{StaticResource FontSize}"/>
             <Setter Property="TextColor" Value="{StaticResource TextColor}"/>
-            <Setter Property="HorizontalTextAlignment" Value="Center"/>
+            <Setter Property="HorizontalTextAlignment" Value="End"/>
         </Style>
 
         <Style TargetType="Button"
@@ -35,10 +36,12 @@
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto, *, Auto"
-          BackgroundColor="{StaticResource PrimaryBackground}">
+          BackgroundColor="{StaticResource PrimaryBackground}"
+          Margin="5,5,5,5">
         <HorizontalStackLayout Grid.Row="0" 
                                Spacing="10"
                                HorizontalOptions="Center"
+                               ZIndex="1"
                                >
             <Button BindingContext="{Binding RunCommand}"
                     Style="{StaticResource TransportButtonStyle}"
@@ -55,29 +58,56 @@
         </HorizontalStackLayout>
  
         <local:CanvasView x:Name="Canvas" 
-                          Grid.Row="1"
+                          Grid.Row="0"
+                          Grid.RowSpan="2"
                           HorizontalOptions="Fill"
                           VerticalOptions="Fill"
                           />
         
         <Grid ColumnDefinitions="Auto, *, Auto"
+              RowDefinitions="Auto, Auto"
               Grid.Row="2"
               ColumnSpacing="10"
               >
             <Label Grid.Column="0"
+                   Grid.Row="0"
                    Style="{StaticResource TextStyle}"
-                   Text="Frame rate:"
+                   Text="{x:Static res:Strings.FramerateText}"
+                   ToolTipProperties.Text="{x:Static res:Strings.FramerateTooltipText}"
                    />
             <Slider Grid.Column="1" 
+                    Grid.Row="0"
                     VerticalOptions="Center"
-                    Minimum="{Binding MinimumSpeed, Mode=OneTime}" 
-                    Maximum="{Binding MaximumSpeed, Mode=OneTime}" 
+                    Minimum="{Binding MinimumFramerate, Mode=OneTime}" 
+                    Maximum="{Binding MaximumFramerate, Mode=OneTime}" 
                     Value="{Binding Animation.Framerate, Mode=TwoWay}"
+                    ToolTipProperties.Text="{x:Static res:Strings.FramerateTooltipText}"
                     />
             <Label Grid.Column="2"
+                   Grid.Row="0"
                    Style="{StaticResource TextStyle}"
                    Text="{Binding Animation.Framerate, Mode=OneWay}"
                    />
+
+            <Label Grid.Column="0"
+                   Grid.Row="1"
+                   Style="{StaticResource TextStyle}"
+                   Text="{x:Static res:Strings.LaunchesText}"
+                   ToolTipProperties.Text="{x:Static res:Strings.LaunchesTooltipText}"
+                  />
+            <Slider Grid.Column="1" 
+                    Grid.Row="1"
+                    VerticalOptions="Center"
+                    Minimum="{Binding MinimumLaunches, Mode=OneTime}" 
+                    Maximum="{Binding MaximumLaunches, Mode=OneTime}" 
+                    Value="{Binding Animation.Launches, Mode=TwoWay}"
+                    ToolTipProperties.Text="{x:Static res:Strings.LaunchesTooltipText}"
+                    />
+            <Label Grid.Column="2"
+                   Grid.Row="1"
+                   Style="{StaticResource TextStyle}"
+                   Text="{Binding Animation.Launches, Mode=OneWay}"
+                  />
         </Grid>
     </Grid>
     

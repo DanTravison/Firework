@@ -35,11 +35,6 @@
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.19041.0</TargetPlatformMinVersion>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
-	  <CodesignKey>Apple Development: Created via API (7LS2D63R9P)</CodesignKey>
-	  <CodesignProvision>VS: WildCard Development</CodesignProvision>
-	</PropertyGroup>
-
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-android|AnyCPU'">
 	  <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 	</PropertyGroup>

@@ -1,11 +1,13 @@
 ﻿namespace FireworkExperiment.Fireworks;
 
 using SkiaSharp;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 /// <summary>
 /// Provides an abstract particle base class.
 /// </summary>
+[DebuggerDisplay("{Location.X, Location.Y}@{Delta.X, Delta.Y}")]
 internal abstract class Particle
 {
     #region Fields
@@ -14,6 +16,16 @@ internal abstract class Particle
     /// Defines a singleton Random.
     /// </summary>
     public static readonly Random Rand = new Random();
+
+    /// <summary>
+    /// Defines the age of the <see cref="Particle"/>, in seconds.
+    /// </summary>
+    double _age;
+
+    /// <summary>
+    /// Defines the maximum lifetime of the <see cref="Particle"/>. in seconds.
+    /// </summary>
+    double _lifetime;
 
     /// <summary>
     /// Defines the base gravity constant.
@@ -35,27 +47,26 @@ internal abstract class Particle
     /// <summary>
     /// Initializes a new instance of this class.
     /// </summary>
-    /// <param name="x">The zero-base X coordinate.</param>
-    /// <param name="y">The zero-base Y coordinate.</param>
-    protected Particle(float x, float y)
+    /// <param name="framerate">The animation frames per second.</param>
+    protected Particle(double framerate)
+        : this(Vector.Zero, Vector.Zero, framerate, 0)
     {
-        X = x;
-        Y = y;
-        Meter = y / 100;
     }
 
     /// <summary>
     /// Initializes a new instance of this class.
     /// </summary>
-    /// <param name="x">The zero-base X coordinate.</param>
-    /// <param name="y">The zero-base Y coordinate.</param>
-    /// <param name="adjustX">The X adjustment amount.</param>
-    /// <param name="adjustY">The Y adjustment amount.</param>
-    protected Particle(float x, float y, float adjustX, float adjustY)
-        : this(x, y)
+    /// <param name="location">The <see cref="Vector"/> defining the starting location.</param>
+    /// <param name="velocity">The <see cref="Vector"/> defining the starting velocity.</param>
+    /// <param name="framerate">The animation frames per second.</param>
+    /// <param name="lifetime">The <see cref="Lifetime"/> of the particle; otherwise, 
+    /// zero if the particle does not have a maximum lifetime.</param>
+    protected Particle(Vector location, Vector velocity, double framerate, double lifetime = 0)
     {
-        AdjustX = adjustX;
-        AdjustY = adjustY;
+        _lifetime = lifetime >= 0 ? lifetime : 0;
+        Location = location;
+        Delta = velocity;
+        Framerate = framerate;
     }
 
     #region Properties
@@ -70,50 +81,30 @@ internal abstract class Particle
     }
 
     /// <summary>
-    /// Gets the X coordinate.
+    /// Gets the <see cref="Vector"/> for the current location.
     /// </summary>
-    public float X
+    public Vector Location
     {
         get;
         protected set;
     }
 
     /// <summary>
-    /// Gets the Y coordinate.
+    /// Gets the <see cref="Vector"/> for the change in <see cref="Location"/>
     /// </summary>
-    public float Y
+    public Vector Delta
     {
         get;
         protected set;
     }
 
     /// <summary>
-    /// Gets the X adjustment.
-    /// </summary>
-    protected float AdjustX
-    {
-        get;
-        set;
-    }
-
-    /// <summary>
-    /// Gets the Y adjustment.
-    /// </summary>
-    protected float AdjustY
-    {
-        get;
-        set;
-    }
-
-    /// <summary>
-    /// Gets the meter to use to draw.
+    /// Gets the size metric to use to calculate the particle size when drawing.
     /// </summary>
     /// <remarks>
     /// This property is only valid within <see cref="OnRender"/>.
     /// </remarks>
-    /// <exception cref="InvalidOperationException">This property is not valid
-    /// outside <see cref="OnRender"/>.</exception>
-    protected float Meter
+    protected float SizeMetric
     {
         get;
         private set;
@@ -122,10 +113,44 @@ internal abstract class Particle
     /// <summary>
     /// Determines if the <see cref="Particle"/> is done animating.
     /// </summary>
-    /// <value>true if the <see cref="Particle"/> is done animating; otherwise, false.</value>
+    /// <value>
+    /// true if <see cref="Delta"/> is zero
+    /// -or-
+    /// <see cref="Lifetime"/> has been set and <see cref="Age"/> is greater
+    /// than or equal to <see cref="Lifetime"/>.
+    /// </value>
     public virtual bool IsDone
     {
-        get => false;
+        get => (Delta.X == 0 && Delta.Y == 0) || (_lifetime > 0 && _age >= _lifetime);
+    }
+
+    /// <summary>
+    /// Gets the age of the <see cref="Particle"/>, in seconds.
+    /// </summary>
+    public double Age
+    {
+        get => _age;
+    }
+
+    /// <summary>
+    /// Gets the maximum age of the <see cref="Particle"/>, in seconds.
+    /// </summary>
+    /// <value>
+    /// The maximum age of the <see cref="Particle"/>, in seconds; otherwise,
+    /// zero if the particle does not age.
+    /// </value>
+    public double Lifetime
+    {
+        get => _lifetime;
+        protected set => _lifetime = value;
+    }
+
+    /// <summary>
+    /// Gets the animation framerate (frames per second)
+    /// </summary>
+    public double Framerate
+    {
+        get;
     }
 
     #endregion Properties
@@ -133,11 +158,41 @@ internal abstract class Particle
     /// <summary>
     /// Updates the particle for rendering.
     /// </summary>
-    public virtual void Update(ParticleCollection particles)
+    /// <param name="elapsed">The time since the last update; in milliseconds.</param>
+    public void Update(ParticleCollection particles, double elapsed)
     {
-        Y -= AdjustY;
-        X += AdjustX;
-        AdjustY -= Gravity;
+        _age += elapsed / 1000;
+        OnUpdate(particles, elapsed);
+    }
+
+    /// <summary>
+    /// Overridden in the derived class to update the <see cref="Particle"/> for rendering.
+    /// </summary>
+    /// <param name="particles">The <see cref="ParticleCollection"/> to optionally update.</param>
+    /// <param name="elapsed">The elapsed time, in milliseconds, since the last update.</param>
+    protected virtual void OnUpdate(ParticleCollection particles, double elapsed)
+    {
+    }
+
+    /// <summary>
+    /// Fades a color based on it's maximumAge.
+    /// </summary>
+    /// <param name="fadeThreshold">The age threshold to start to fade.</param>
+    /// <returns>The <see cref="SKColor"/> to use to render the <see cref="Parallel"/>.</returns>
+     protected SKColor Fade(double fadeThreshold)
+    {
+        // delay fading the color
+        if (_age <= fadeThreshold || Lifetime <= 0)
+        {
+            return Color;
+        }
+        else
+        {
+            double age = Math.Min(_age, Lifetime);
+            // Fade the color based on age.
+            int alpha = (int)(255 * ((Lifetime - age) / Lifetime));
+            return SetAlpha(Color, alpha);
+        }
     }
 
     /// <summary>
@@ -148,7 +203,7 @@ internal abstract class Particle
     /// <param name="paint">The <see cref="SKPaint"/> to use to draw.</param>
     public void Render(SKCanvas canvas, SKSize canvasSize, SKPaint paint)
     {
-        Meter = canvasSize.Height / 100;
+        SizeMetric = canvasSize.Height / 125;
         OnRender(canvas, paint);
     }
 
@@ -168,13 +223,17 @@ internal abstract class Particle
     /// <param name="size">The number of items to draw.</param>
     protected virtual void Draw(SKCanvas canvas, SKPaint paint, SKColor color, float size)
     {
-        size = (float)Math.Round(size, 0);
+        // Ensure a minimum size of the particle.
+        size = Math.Max((float)Math.Round(size, 0), 3);
         paint.Color = color;
+
+        float lx = Location.X;
+        float ly = Location.Y;
 
         for (int i = 0; i < size; i++)
         {
-            float x = X - (size - i);
-            float y = Y - 1 - i;
+            float x = lx - (size - i);
+            float y = ly - 1 - i;
             float w = size * 2 - (2 * i);
             float h = 2 + (2 * i);
 
@@ -204,6 +263,10 @@ internal abstract class Particle
         return new SKColor(color.Red, color.Green, color.Blue, (byte)alpha);
     }
 
+    // Define two hue ranges that produce reasonably 'bright' colors.
+    static readonly Vector _lowHues = new(0, 70);
+    static readonly Vector _highHues = new(160, 50);
+
     /// <summary>
     /// Gets an <see cref="SKColor"/> from a hue.
     /// </summary>
@@ -213,41 +276,22 @@ internal abstract class Particle
     {
         if (hue == 0)
         {
-            hue = Particle.Rand.Next(360);
+            if (Rand.Next(2) == 0)
+            {
+                // select from the low order hue values.
+                hue = Rand.Next((int)_lowHues.Y) + _lowHues.X;
+            }
+            else
+            {
+                // select from the high order hue values.
+                hue = Rand.Next((int)_highHues.Y) + _highHues.X;
+            }
         }
         else
         {
             hue = hue % 360;
         }
-
-        int hueTransform = (int)(255 * ((hue % 60) / 60.0));
-
-        if (hue >= 0 && hue < 60)
-        {
-            return FromARGB(255, 255, hueTransform, 0);
-        }
-        if (hue >= 60 && hue < 120)
-        {
-            return FromARGB(255, 255 - hueTransform, 255, 0);
-        }
-        if (hue >= 120 && hue < 180)
-        {
-            return FromARGB(255, 0, 255, hueTransform);
-        }
-        if (hue >= 180 && hue < 240)
-        {
-            return FromARGB(255, 0, 255 - hueTransform, 255);
-        }
-        if (hue >= 240 && hue < 300)
-        {
-            return FromARGB(255, hueTransform, 0, 255);
-        }
-        if (hue >= 300 && hue < 360)
-        {
-            return FromARGB(255, 255, 0, 255 - hueTransform);
-        }
-
-        return new SKColor(255, 255, 255, 255);
+        return SKColor.FromHsl(hue, 100, 50, 255);
     }
 
     /// <summary>

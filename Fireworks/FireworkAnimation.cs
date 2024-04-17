@@ -5,6 +5,7 @@ using SkiaSharp;
 using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
 using System.ComponentModel;
+using System.Diagnostics;
 
 /// <summary>
 /// Provides a firework animation.
@@ -12,6 +13,21 @@ using System.ComponentModel;
 public class FireworkAnimation : ObservableObject, IDisposable
 {
     #region Constants
+
+    /// <summary>
+    /// Defines the minimum number of launches per second.
+    /// </summary>
+    public const int MinimumLaunches = 1;
+
+    /// <summary>
+    /// Defines the maximum number of launches per second.
+    /// </summary>
+    public const int MaximumLaunches = 5;
+
+    /// <summary>
+    /// Defines the default number of launches per second.
+    /// </summary>
+    public const int DefaultLaunches = MaximumLaunches;
 
     /// <summary>
     /// Defines the minimum number of frames per second.
@@ -33,10 +49,29 @@ public class FireworkAnimation : ObservableObject, IDisposable
     #region Fields
 
     SKCanvasView _canvas;
-    TimeSpan _delay;
-    readonly int _launcherDelay;
+
+    /// <summary>
+    /// The delay, in milliseconds, between launches
+    /// </summary>
+    double _launchDelay = 1000 / DefaultLaunches;
+
+    /// <summary>
+    /// Stopwatch used to time launches.
+    /// </summary>
+    readonly Stopwatch _launchClock = new();
+
+    /// <summary>
+    /// Stopwatch used to time frameDelay time between OnPaint calls.
+    /// </summary>
+    readonly Stopwatch _frameClock = new();
+
+    // Frames per second
     double _framerate = DefaultFramerate;
-    DateTime _clock;
+
+    // The animation loop's cycle length
+    TimeSpan _delay;
+
+    // The current animation state
     AnimationState _state;
     Task _loopTask;
 
@@ -46,13 +81,11 @@ public class FireworkAnimation : ObservableObject, IDisposable
     /// Initializes a new instance of this class.
     /// </summary>
     /// <param name="canvas">The <see cref="SKCanvasView"/> to draw to.</param>
-    /// <param name="launcherDelay">The delay between launching a new firework.</param>
-    public FireworkAnimation(SKCanvasView canvas, int launcherDelay = 300)
+    public FireworkAnimation(SKCanvasView canvas)
     {
         _canvas = canvas;
         _canvas.PaintSurface += OnPaintSurface;
         _canvas.SizeChanged += OnSizeChanged;
-        _launcherDelay = launcherDelay;
     }
 
     #region Event Handlers
@@ -90,7 +123,13 @@ public class FireworkAnimation : ObservableObject, IDisposable
             {
                 if (_state == AnimationState.Running)
                 {
-                    _clock = DateTime.Now;
+                    _launchClock.Restart();
+                    _frameClock.Restart();
+                }
+                else
+                {
+                    _launchClock.Stop();
+                    _frameClock.Stop();
                 }
             }
         }
@@ -127,13 +166,32 @@ public class FireworkAnimation : ObservableObject, IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets or sets the current number of launches per second.
+    /// </summary>
+    public int Launches
+    {
+        get => (int)(1000 / _launchDelay);
+        set
+        {
+            if (value < MinimumLaunches)
+            {
+                value = MinimumLaunches;
+            }
+            else if (value > MaximumLaunches)
+            {
+                value = MaximumLaunches;
+            }
+            SetProperty(ref _launchDelay, 1000 / value, LaunchesChangedEventArgs);
+        }
+    }
+
     #endregion Properties
 
     #region Animation Control
 
     void UpdateClock()
     {
-        _clock = DateTime.Now;
         _delay = TimeSpan.FromMilliseconds(1000 / _framerate);
     }
 
@@ -159,7 +217,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
     /// Stops the animation
     /// </summary>
     /// <returns>
-    /// true if the animation was stopped; otherwise, false if the animation 
+    /// true if the animation was stopped; otherwise, false if the animation
     /// was not running or was paused.
     /// </returns>
     public void Stop()
@@ -167,6 +225,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
         if (_state != AnimationState.Stopped)
         {
             State = AnimationState.Stopped;
+            Particles.Clear();
             _loopTask = null;
         }
     }
@@ -211,7 +270,7 @@ public class FireworkAnimation : ObservableObject, IDisposable
     /// Invalidate the canvas on the UI thread.
     /// </summary>
     /// <returns>
-    /// true if the invalidate was queued; otherwise, false if it 
+    /// true if the invalidate was queued; otherwise, false if it
     /// the canvas is no longer valid.
     /// </returns>
     bool Invalidate()
@@ -242,21 +301,29 @@ public class FireworkAnimation : ObservableObject, IDisposable
         SKCanvas canvas = surface.Canvas;
         SKSize canvasSize = _canvas.CanvasSize;
 
+        double frameDelay = _frameClock.ElapsedMilliseconds;
+        _frameClock.Restart();
+
         if (_state == AnimationState.Running)
         {
-            DateTime now = DateTime.Now;
-            double elapsed = (now - _clock).TotalMilliseconds;
-            if (elapsed > _launcherDelay)
+            double launchDelay = _launchClock.ElapsedMilliseconds;
+
+            if (launchDelay >= _launchDelay)
             {
-                _clock = now;
                 Firework firework = new Firework(canvasSize.Width, canvasSize.Height, Framerate);
                 Particles.Add(firework);
+                _launchClock.Restart();
             }
         }
 
         if (_state != AnimationState.Stopped && Particles.Count > 0)
         {
             List<int> stale = [];
+
+            if (_state == AnimationState.Paused)
+            {
+                frameDelay = 0;
+            }
 
             using (SKPaint paint = new())
             {
@@ -269,12 +336,27 @@ public class FireworkAnimation : ObservableObject, IDisposable
                     if (particle == null)
                     {
                         // TODO: Report and/or log error/warning
-                        // Possible race.
+                        // possible race.
+                        if (Debugger.IsAttached)
+                        {
+                            Debugger.Break();
+                        }
+                        // TODO: Clean up the Particles collection and continue?
                         return;
                     }
                     if (_state == AnimationState.Running)
                     {
-                        particle.Update(Particles);
+                        if (frameDelay == 0)
+                        {
+                            // NOTE: This is a timing issue that can occur
+                            // if OnPaint's time is near or greater than the framerate,
+                            // -or-
+                            // a resize occurs while an OnPaint is in progress.
+                            // 
+                            // In either case, defer the paint to the next InvalidateSurface call.
+                            return;
+                        }
+                        particle.Update(Particles, frameDelay);
                         if (particle.IsDone)
                         {
                             // insert in reverse order.
@@ -341,6 +423,12 @@ public class FireworkAnimation : ObservableObject, IDisposable
     /// when <see cref="Framerate"/> changes.
     /// </summary>
     public static readonly PropertyChangedEventArgs FramerateChangedEventArgs = new(nameof(Framerate));
+
+    /// <summary>
+    /// <see cref="PropertyChangedEventArgs"/> passed to <see cref="INotifyPropertyChanged.PropertyChanged"/>
+    /// when <see cref="Launches"/> changes.
+    /// </summary>
+    public static readonly PropertyChangedEventArgs LaunchesChangedEventArgs = new(nameof(Launches));
 
     #endregion PropertyChangedEventArgs
 }
